@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SANDF Command & Control Map</title>
+    <!-- Leaflet CSS for Map Architecture -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+    <!-- Font Awesome for matching dashboard icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    
+    <style>
+        :root {
+            --bg-primary: #0b0f19;
+            --bg-secondary: #111827;
+            --border-color: #1f2937;
+            --text-muted: #9ca3af;
+            
+            /* Strict Branch Color Palette matching index.html */
+            --color-hq: #3b82f6;       /* Blue */
+            --color-infantry: #10b981; /* Green */
+            --color-sf: #ef4444;       /* Red */
+            --color-airforce: #06b6d4; /* Cyan */
+            --color-navy: #f59e0b;     /* Amber */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-primary);
+            color: #f3f4f6;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar Navigation Layout */
+        .sidebar {
+            width: 320px;
+            background-color: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-header i {
+            color: var(--color-hq);
+            font-size: 1.5rem;
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .legend-container {
+            padding: 20px;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .legend-title {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            margin-bottom: 8px;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .legend-item:hover {
+            border-color: #4b5563;
+            transform: translateX(4px);
+        }
+
+        .legend-icon-wrapper {
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 1.1rem;
+        }
+
+        .legend-info h4 {
+            font-size: 0.9rem;
+            margin-bottom: 2px;
+        }
+
+        .legend-info p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Return Control Action Button */
+        .return-btn {
+            margin: 20px;
+            padding: 12px;
+            background-color: #1f2937;
+            border: 1px solid #374151;
+            color: #fff;
+            border-radius: 6px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+
+        .return-btn:hover {
+            background-color: #374151;
+        }
+
+        /* Main Viewport Map Elements */
+        .map-container {
+            flex-grow: 1;
+            position: relative;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Leaflet Custom Marker Mechanics CSS */
+        .custom-tactical-marker {
+            background: none;
+            border: none;
+        }
+
+        .marker-radar-pin {
+            width: 36px;
+            height: 36px;
+            border-radius: 50% 50% 50% 0;
+            background: var(--marker-color);
+            position: absolute;
+            transform: rotate(-45deg);
+            left: -18px;
+            top: -18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .marker-radar-pin i {
+            transform: rotate(45deg);
+            color: #ffffff;
+            font-size: 0.95rem;
+        }
+
+        /* Custom Dark Mode Tooltips for Map UI */
+        .leaflet-popup-content-wrapper {
+            background: var(--bg-secondary) !important;
+            color: #ffffff !important;
+            border: 1px solid var(--border-color);
+            border-radius: 8px !important;
+            padding: 4px;
+        }
+
+        .leaflet-popup-tip {
+            background: var(--bg-secondary) !important;
+            border: 1px solid var(--border-color);
+        }
+
+        .popup-card h3 {
+            font-size: 1rem;
+            margin-bottom: 6px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 4px;
+        }
+
+        .popup-card p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .popup-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .popup-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Tactical Deployment Sidebar Control Panel -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <i class="fa-solid fa-satellite-dish"></i>
+            <h2>Strategic Map View</h2>
+        </div>
+        
+        <div class="legend-container">
+            <div class="legend-title">Operational Branches</div>
+            
+            <div class="legend-item" onclick="focusLocation([-25.753, 28.188], 11)">
+                <div class="legend-icon-wrapper" style="background-color: rgba(59, 130, 246, 0.15); color: var(--color-hq);">
+                    <i class="fa-solid fa-building-shield"></i>
+                </div>
+                <div class="legend-info">
+                    <h4>National HQ</h4>
+                    <p>Pretoria (Command Complex)</p>
+                </div>
+            </div>
+
+            <div class="legend-item" onclick="focusLocation([-25.795, 28.175], 12)">
+                <div class="legend-icon-wrapper" style="background-color: rgba(16, 185, 129, 0.15); color: var(--color-infantry);">
+                    <i class="fa-solid fa-person-military-to-person"></i>
+                </div>
+                <div class="legend-info">
+                    <h4>Infantry Formations</h4>
+                    <p>Thaba Tshwane Base</p>
+                </div>
+            </div>
+
+            <div class="legend-item" onclick="focusLocation([-25.908, 28.219], 12)">
+                <div class="legend-icon-wrapper" style="background-color: rgba(239, 68, 68, 0.15); color: var(--color-sf);">
+                    <i class="fa-solid fa-user-ninja"></i>
+                </div>
+                <div class="legend-info">
+                    <h4>Special Forces HQ</h4>
+                    <p>5 Special Forces (Phalaborwa/Pretoria)</p>
+                </div>
+            </div>
+
+            <div class="legend-item" onclick="focusLocation([-25.807, 28.176], 12)">
+                <div class="legend-icon-wrapper" style="background-color: rgba(6, 182, 212, 0.15); color: var(--color-airforce);">
+                    <i class="fa-solid fa-jet-fighter"></i>
+                </div>
+                <div class="legend-info">
+                    <h4>Air Force Operations</h4>
+                    <p>AFB Swartkop / Waterkloof</p>
+                </div>
+            </div>
+
+            <div class="legend-item" onclick="focusLocation([-34.192, 18.432], 11)">
+                <div class="legend-icon-wrapper" style="background-color: rgba(245, 158, 111, 0.15); color: var(--color-navy);">
+                    <i class="fa-solid fa-ship"></i>
+                </div>
+                <div class="legend-info">
+                    <h4>Naval & Marine Assets</h4>
+                    <p>Simon's Town Fleet Base</p>
+                </div>
+            </div>
+        </div>
+
+        <a href="index.html" class="return-btn">
+            <i class="fa-solid fa-arrow-left-long"></i> Return to Main Dashboard
+        </a>
+    </div>
+
+    <!-- Live Map Viewport Frame -->
+    <div class="map-container">
+        <div id="map"></div>
+    </div>
+
+    <!-- Leaflet JS Open-source Engine Dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <script>
+        // Initialize Map centered over South Africa
+        const map = L.map('map', {
+            zoomControl: false
+        }).setView([-29.0, 25.0], 6);
+
+        // Add Zoom buttons contextually in top right corner
+        L.control.zoom({ position: 'topright' }).addTo(map);
+
+        // Dark Theme Map Tileset Configuration (CartoDB Dark Matter)
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Helper Function to Create Styled Custom Markers Using FontAwesome
+        function createTacticalIcon(iconClass, colorVariable) {
+            const hexColor = getComputedStyle(document.documentElement).getPropertyValue(colorVariable).trim();
+            return L.divIcon({
+                className: 'custom-tactical-marker',
+                html: `<div class="marker-radar-pin" style="--marker-color: ${hexColor}">
+                        <i class="${iconClass}"></i>
+                       </div>`,
+                iconSize: [36, 36],
+                iconAnchor: [18, 18],
+                popupAnchor: [0, -20]
+            });
+        }
+
+        // Tactical Locations Spatial Matrix Array
+        const militaryAssets = [
+            {
+                name: "SANDF Defence Headquarters",
+                branch: "hq",
+                coords: [-25.753, 28.188],
+                icon: "fa-solid fa-building-shield",
+                colorVar: "--color-hq",
+                description: "Administrative and supreme command center for all joint operations across South Africa.",
+                targetAnchor: "hq"
+            },
+            {
+                name: "SA Army Infantry Division HQ",
+                branch: "infantry",
+                coords: [-25.795, 28.175],
+                icon: "fa-solid fa-person-military-to-person",
+                colorVar: "--color-infantry",
+                description: "Command center managing mobile mechanized elements and forward deployments.",
+                targetAnchor: "infantry"
+            },
+            {
+                name: "Special Forces Brigade HQ",
+                branch: "specialforces",
+                coords: [-25.908, 28.219],
+                icon: "fa-solid fa-user-ninja",
+                colorVar: "--color-sf",
+                description: "Tier 1 deployment command coordinates and high-security asset logistics.",
+                targetAnchor: "specialforces"
+            },
+            {
+                name: "Air Force Command (AFB Waterkloof)",
+                branch: "airforce",
+                coords: [-25.830, 28.215],
+                icon: "fa-solid fa-jet-fighter",
+                colorVar: "--color-airforce",
+                description: "Primary logistics airbase and heavy tactical transport squadron command post.",
+                targetAnchor: "airforce"
+            },
+            {
+                name: "Naval Fleet Command & Marine Base",
+                branch: "navy",
+                coords: [-34.192, 18.432],
+                icon: "fa-solid fa-ship",
+                colorVar: "--color-navy",
+                description: "Main naval operations center housing fleet units, surface vessels, and sea-infantry marines.",
+                targetAnchor: "marines"
+            }
+        ];
+
+        // Loop array data to dynamically render pins with accurate jump links
+        militaryAssets.forEach(asset => {
+            const customIcon = createTacticalIcon(asset.icon, asset.colorVar);
+            
+            // Build out interactive data modal popup card content
+            const popupContent = `
+                <div class="popup-card">
+                    <h3>${asset.name}</h3>
+                    <p>${asset.description}</p>
+                    <a href="index.html#${asset.targetAnchor}" class="popup-link" target="_parent">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Branch Intelligence Profile
+                    </a>
+                </div>
+            `;
+
+            L.marker(asset.coords, { icon: customIcon })
+                .addTo(map)
+                .bindPopup(popupContent);
+        });
+
+        // Interactive sidebar targeting function
+        function focusLocation(coords, zoomLevel) {
+            map.setView(coords, zoomLevel, {
+                animate: true,
+                duration: 1.2
+            });
+        }
+    </script>
+</body>
+</html>
