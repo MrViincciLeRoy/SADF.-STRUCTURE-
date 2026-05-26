@@ -128,65 +128,65 @@ const SD = {
 
 const UNITS = [
   {cat:"SA Army — Infantry",color:"#4ade80",units:[
-    {n:"1 SA Infantry Battalion",loc:"Tempe, Free State",r:"Light infantry, border safeguarding (Op Corona)"},
-    {n:"2 SA Infantry Battalion",loc:"Wallmansthal, Gauteng",r:"Mechanised infantry"},
-    {n:"3 SA Infantry Battalion",loc:"Kimberley, N. Cape",r:"Light infantry, desert operations"},
-    {n:"4 SA Infantry Battalion",loc:"Middelburg, Mpumalanga",r:"Motorised infantry"},
-    {n:"5 SA Infantry Battalion",loc:"Doornkop, Gauteng",r:"Urban operations, internal deployment"},
-    {n:"6 SA Infantry Battalion",loc:"Oudtshoorn, W. Cape",r:"Light infantry, mountain warfare"},
-    {n:"7 SA Infantry Battalion",loc:"Phalaborwa, Limpopo",r:"Bushveld operations, border patrol"},
-    {n:"8 SA Infantry Battalion",loc:"Upington, N. Cape",r:"Desert and semi-arid operations"},
-    {n:"9 SA Infantry Battalion",loc:"Mtubatuba, KZN",r:"Coastal and bush operations"},
-    {n:"21 SA Infantry Battalion",loc:"Grahamstown, E. Cape",r:"Reserve force infantry"},
-    {n:"22 SA Infantry Battalion",loc:"Cape Town, W. Cape",r:"Reserve force infantry"},
-    {n:"23 SA Infantry Battalion",loc:"Durban, KZN",r:"Reserve force infantry"},
+    {n:"1 SA Infantry Battalion",loc:"Tempe, Free State",type:"BATTALION",size:"600–800 Soldiers",leader:"Lt Colonel",color:"#fb923c",r:"Light infantry framework, border safeguarding deployments (Op Corona)."},
+    {n:"2 SA Infantry Battalion",loc:"Wallmansthal, Gauteng",type:"BATTALION",size:"600–800 Soldiers",leader:"Lt Colonel",color:"#fb923c",r:"Mechanised infantry equipped with heavy armored Ratel IFVs."},
+    {n:"3 SA Infantry Battalion",loc:"Kimberley, N. Cape",type:"BATTALION",size:"600–800 Soldiers",leader:"Lt Colonel",color:"#fb923c",r:"Main basic training center & light infantry specialized for desert operations."},
+    {n:"4 SA Infantry Battalion",loc:"Middelburg, Mpumalanga",type:"BATTALION",size:"600–800 Soldiers",leader:"Lt Colonel",color:"#fb923c",r:"Motorised infantry backed by mobile Samil transport assets."},
+    {n:"5 SA Infantry Battalion",loc:"Doornkop, Gauteng",type:"BATTALION",size:"600–800 Soldiers",leader:"Lt Colonel",color:"#fb923c",r:"Specialized high-density urban terrain ops and homeland security defense."},
+    {n:"6 SA Infantry Battalion",loc:"Oudtshoorn, W. Cape",type:"BATTALION",size:"600–800 Soldiers",leader:"Lt Colonel",color:"#fb923c",r:"Light infantry framework specialized in mountainous warfare structures."},
+    {n:"7 SA Infantry Battalion",loc:"Phalaborwa, Limpopo",type:"BATTALION",size:"600–800 Soldiers",leader:"Lt Colonel",color:"#fb923c",r:"Thick bushveld tracking operations and active northern border patrols."},
+    {n:"8 SA Infantry Battalion",loc:"Upington, N. Cape",type:"BATTALION",size:"600–800 Soldiers",leader:"Lt Colonel",color:"#fb923c",r:"Mechanised desert infantry utilizing Ratel configurations."},
+    {n:"9 SA Infantry Battalion",loc:"Mtubatuba, KZN",type:"BATTALION",size:"600–800 Soldiers",leader:"Lt Colonel",color:"#fb923c",r:"Motorized units optimized for coastal thickets and littoral environments."},
+    {n:"21 SA Infantry Battalion",loc:"Grahamstown, E. Cape",type:"BATTALION (RESERVE)",size:"400-600 Contingent",leader:"Lt Colonel (Res)",color:"#fb923c",r:"Part-time reserve infantry framework structurally identical to active battalions."},
+    {n:"22 SA Infantry Battalion",loc:"Cape Town, W. Cape",type:"BATTALION (RESERVE)",size:"400-600 Contingent",leader:"Lt Colonel (Res)",color:"#fb923c",r:"Strategic part-time provincial structural infantry replenishment asset."},
+    {n:"23 SA Infantry Battalion",loc:"Durban, KZN",type:"BATTALION (RESERVE)",size:"400-600 Contingent",leader:"Lt Colonel (Res)",color:"#fb923c",r:"Regional part-time defensive asset supporting primary infantry structures."}
   ]},
   {cat:"SA Army — Armour",color:"#fb923c",units:[
-    {n:"Regiment Mooirivier",loc:"Potchefstroom, NW",r:"Olifant Mk2 Main Battle Tank operations"},
-    {n:"South African Irish Regiment",loc:"Cape Town",r:"Reserve armour regiment"},
-    {n:"Natal Mounted Rifles",loc:"Durban, KZN",r:"Reserve light armour"},
+    {n:"Regiment Mooirivier",loc:"Potchefstroom, NW",type:"REGIMENT (BATTALION SCALE)",size:"~500 Heavy Crew",leader:"Lt Colonel / Armor Command",color:"#fb923c",r:"Primary heavy strike element operating Olifant Mk2 Main Battle Tanks."},
+    {n:"South African Irish Regiment",loc:"Cape Town",type:"REGIMENT (RESERVE Scale)",size:"~300 Armor Crew",leader:"Major / Lt Colonel (Res)",color:"#fb923c",r:"Reserve mechanized unit trained on armor mobilization strategies."},
+    {n:"Natal Mounted Rifles",loc:"Durban, KZN",type:"REGIMENT (RESERVE Scale)",size:"~300 Recon Crew",leader:"Major / Lt Colonel (Res)",color:"#fb923c",r:"Light armor formation focused on mobile vehicle-based reconnaissance."}
   ]},
   {cat:"SA Army — Artillery",color:"#ef4444",units:[
-    {n:"4 Artillery Regiment",loc:"Potchefstroom, NW",r:"G5 155mm howitzer, G6 self-propelled"},
-    {n:"14 Artillery Regiment",loc:"Tempe, Free State",r:"Reserve artillery regiment"},
-    {n:"10 Anti-Aircraft Artillery Regiment",loc:"Tempe",r:"Air defence systems"},
+    {n:"4 Artillery Regiment",loc:"Potchefstroom, NW",type:"REGIMENT (BATTALION SCALE)",size:"~600 Gunner Force",leader:"Lt Colonel / Fire Command",color:"#fb923c",r:"Heavy indirect fire core operating G5 towed & G6 self-propelled 155mm systems."},
+    {n:"14 Artillery Regiment",loc:"Tempe, Free State",type:"REGIMENT (RESERVE Scale)",size:"~300 Fire Crew",leader:"Major (Res)",color:"#fb923c",r:"Strategic backup fire teams coordinating modular field artillery scales."},
+    {n:"10 Anti-Aircraft Regiment",loc:"Tempe",type:"REGIMENT (BATTALION SCALE)",size:"~500 Shield Force",leader:"Lt Colonel / Air Def Command",color:"#fb923c",r:"Tactical air defense asset managing surface-to-air tracking networks."}
   ]},
   {cat:"SA Army — Special Forces",color:"#a78bfa",units:[
-    {n:"4 Special Forces Regiment",loc:"Langebaanweg, W. Cape",r:"Maritime special forces, recce"},
-    {n:"5 Special Forces Regiment",loc:"Phalaborwa, Limpopo",r:"Bushveld recce, direct action"},
-    {n:"45 Parachute Regiment",loc:"Tempe, Free State",r:"Airborne infantry, rapid deployment"},
+    {n:"4 Special Forces Regiment",loc:"Langebaanweg, W. Cape",type:"RECIPIENT OPERATIONAL FORCE",size:"~150 operators (Compacted)",leader:"Colonel / Commander SF",color:"#f472b6",r:"Highly compact elite maritime specialists running covert recce and diving strikes."},
+    {n:"5 Special Forces Regiment",loc:"Phalaborwa, Limpopo",type:"RECIPIENT OPERATIONAL FORCE",size:"~200 operators (Compacted)",leader:"Colonel / Commander SF",color:"#f472b6",r:"Elite deep infiltration bushveld reconnaissance and unconventional direct action teams."},
+    {n:"45 Parachute Regiment",loc:"Tempe, Free State",type:"REGIMENT (BATTALION SCALE)",size:"~500 Airborne Force",leader:"Lt Colonel / Airborne Lead",color:"#fb923c",r:"Rapid airborne interception component trained for combat drop deployments."}
   ]},
   {cat:"SA Army — Engineers",color:"#22d3ee",units:[
-    {n:"1 Engineer Support Regiment",loc:"Tempe, Free State",r:"Combat engineering, bridging, obstacles"},
-    {n:"2 Field Engineer Regiment",loc:"Wallmansthal, Gauteng",r:"Field engineering, route clearance"},
+    {n:"1 Engineer Support Regiment",loc:"Tempe, Free State",type:"BATTALION STRUCT",size:"~500 Field Engineers",leader:"Lt Colonel",color:"#fb923c",r:"Combat infrastructure engineers managing tactical bridging, counter-mobility and structural defense."},
+    {n:"2 Field Engineer Regiment",loc:"Wallmansthal, Gauteng",type:"BATTALION STRUCT",size:"~500 Field Engineers",leader:"Lt Colonel",color:"#fb923c",r:"Forward assault engineering including mine clearance, breaching and pathfinding ops."}
   ]},
   {cat:"SA Army — Signals",color:"#818cf8",units:[
-    {n:"7 Signal Regiment",loc:"Thaba Tshwane, Gauteng",r:"Strategic communications, C2 systems"},
-    {n:"8 Signal Regiment",loc:"Tempe, Free State",r:"Tactical communications support"},
+    {n:"7 Signal Regiment",loc:"Thaba Tshwane, Gauteng",type:"BATTALION STRUCT",size:"~400 Comms Experts",leader:"Lt Colonel",color:"#fb923c",r:"Manages strategic backbone theater communications and electronic warfare architectures."},
+    {n:"8 Signal Regiment",loc:"Tempe, Free State",type:"PLATOON / DETACHMENT GROUPS",size:"Distributed Elements",leader:"Captain / Lieutenants",color:"#818cf8",r:"Dispatches modular communications elements directly to field command hubs."}
   ]},
   {cat:"SA Army Service Corps — Logistics",color:"#f59e0b",units:[
-    {n:"1 Service Battalion",loc:"Tempe, Free State",r:"Supply, transport, maintenance"},
-    {n:"2 Service Battalion",loc:"Wallmansthal, Gauteng",r:"Supply chain, fuel and rations"},
-    {n:"Technical Services Corps",loc:"Thaba Tshwane",r:"Vehicle and equipment maintenance"},
-    {n:"Ammunition Depot",loc:"Tempe + Wallmansthal",r:"Ammo storage, issue, and disposal"},
+    {n:"1 Service Battalion",loc:"Tempe, Free State",type:"BATTALION STRUCT",size:"~700 Support Staff",leader:"Lt Colonel",color:"#fb923c",r:"Heavy regional echelon managing bulk distribution of ammunition scales, heavy maintenance, and fuel lines."},
+    {n:"2 Service Battalion",loc:"Wallmansthal, Gauteng",type:"BATTALION STRUCT",size:"~600 Logistics Staff",leader:"Lt Colonel",color:"#fb923c",r:"Main supply chain engine running major line-haul convoys and ration packs distributions."},
+    {n:"Technical Services Corps",loc:"Thaba Tshwane",type:"BRIGADE-SCALE COMPONENT",size:"Wide Technical Matrix",leader:"Colonel / Director Tech",color:"#fb923c",r:"Echelon repair pools tasked with bringing heavy armour and transport assets back online."},
+    {n:"Ammunition Depot",loc:"Tempe + Wallmansthal",type:"SECURE WAREHOUSE STRUCTURE",size:"Staff Contingents",leader:"Major / Depot Master",color:"#f472b6",r:"Tightly audited nodes handling verification, distribution, and storage of live armaments scales."}
   ]},
   {cat:"SA Air Force",color:"#38bdf8",units:[
-    {n:"2 Squadron",loc:"AFB Waterkloof, Gauteng",r:"VIP transport — Boeing 737, Falcon"},
-    {n:"17 Squadron",loc:"AFB Hoedspruit, Limpopo",r:"JAS 39 Gripen air superiority"},
-    {n:"19 Squadron",loc:"AFB Langebaanweg, W. Cape",r:"C-47TP maritime patrol"},
-    {n:"35 Squadron",loc:"AFB Waterkloof",r:"C-130BZ strategic transport"},
-    {n:"87 Helicopter Flying School",loc:"AFB Bloemspruit",r:"Oryx + Rooivalk training"},
+    {n:"2 Squadron",loc:"AFB Waterkloof, Gauteng",type:"SQUADRON (COMPANY SCALE)",size:"~120 flight/ground crew",leader:"Lieutenant Colonel / Flight Lead",color:"#f472b6",r:"Operates VIP air systems including regional Boeing and Falcon jets."},
+    {n:"17 Squadron",loc:"AFB Hoedspruit, Limpopo",type:"SQUADRON (COMPANY SCALE)",size:"~150 specialists",leader:"Lieutenant Colonel / Flight Lead",color:"#f472b6",r:"Frontline intercept assets piloting JAS 39 Gripen multi-role combat aircraft."},
+    {n:"19 Squadron",loc:"AFB Langebaanweg, W. Cape",type:"SQUADRON (COMPANY SCALE)",size:"~100 specialists",leader:"Lieutenant Colonel",color:"#f472b6",r:"Maritime tracking assets operating C-47TP turbo conversion aircraft."},
+    {n:"35 Squadron",loc:"AFB Waterkloof",type:"SQUADRON (COMPANY SCALE)",size:"~180 crew assets",leader:"Lieutenant Colonel",color:"#f472b6",r:"Strategic logistics air transport handling long-haul C-130BZ aircraft networks."},
+    {n:"87 Helicopter Flying School",loc:"AFB Bloemspruit",type:"TRAINING SQUADRON SCALE",size:"~130 Instructors/Students",leader:"Lieutenant Colonel",color:"#f472b6",r:"Advanced rotary hub instructing pilots on heavy Oryx and Rooivalk combat tactics."}
   ]},
   {cat:"SA Navy",color:"#06b6d4",units:[
-    {n:"SAS Simonsberg (Frigate Squadron)",loc:"Simon's Town, W. Cape",r:"MEKO A-200 frigates — SAS Amatola, Isandlwana, Spioenkop, Mendi"},
-    {n:"SAS Diamant (Submarine Flotilla)",loc:"Simon's Town, W. Cape",r:"Type 209/1400 submarines"},
-    {n:"SAS Protea",loc:"Simon's Town",r:"Hydrographic survey vessel"},
+    {n:"SAS Simonsberg (Frigate Squadron)",loc:"Simon's Town, W. Cape",type:"FLOTILLA (COMPANY/BATTALION HYBRID)",size:"~150 per hull crew",leader:"Captain (SAN) / Commander",color:"#f472b6",r:"Commands surface combat capability aboard Valour-class MEKO A-200 guided missile frigates."},
+    {n:"SAS Diamant (Submarine Flotilla)",loc:"Simon's Town, W. Cape",type:"FLOTILLA (COMPANY SCALE)",size:"~45 deep crew per hull",leader:"Commander (SAN)",color:"#f472b6",r:"Sub-surface stealth strike component operating Type 209/1400 diesel-electric systems."},
+    {n:"SAS Protea",loc:"Simon's Town",type:"VESSEL SPECIFIC DETACHMENT",size:"~100 specialist crew",leader:"Commander (SAN)",color:"#f472b6",r:"Specialized survey asset mapping bathymetry data for defense deployment fleets."}
   ]},
   {cat:"SA Military Health Service",color:"#f472b6",units:[
-    {n:"1 Military Hospital",loc:"Thaba Tshwane, Gauteng",r:"Primary military hospital, trauma centre"},
-    {n:"2 Military Hospital",loc:"Cape Town, W. Cape",r:"Western Cape military health"},
-    {n:"3 Military Hospital",loc:"Bloemfontein, Free State",r:"Central region military health"},
-    {n:"17 Medical Battalion Group",loc:"Wallmansthal, Gauteng",r:"Field medical support to deployed forces"},
+    {n:"1 Military Hospital",loc:"Thaba Tshwane, Gauteng",type:"REGIONAL CLINICAL CENTER",size:"Large Medical Matrix",leader:"Brigadier General / Colonel",color:"#fb923c",r:"Primary tertiary medical infrastructure handling critical polytrauma care and evacuation steps."},
+    {n:"2 Military Hospital",loc:"Cape Town, W. Cape",type:"REGIONAL CLINICAL CENTER",size:"Medium Medical Matrix",leader:"Colonel",color:"#fb923c",r:"Regional military tracking hospital handling coastal base forces and fleet deployments."},
+    {n:"3 Military Hospital",loc:"Bloemfontein, Free State",type:"REGIONAL CLINICAL CENTER",size:"Medium Medical Matrix",leader:"Colonel",color:"#fb923c",r:"Central medical hub reinforcing the paratrooper brigades and training wings."},
+    {n:"17 Medical Battalion Group",loc:"Wallmansthal, Gauteng",type:"TACTICAL MEDICAL BATTALION",size:"~400 Field Doctors/Medics",leader:"Lt Colonel / Medical Lead",color:"#fb923c",r:"Dispatches modular field hospitals and combat medics directly to operational deployment sectors."}
   ]},
 ];
 
@@ -412,7 +412,7 @@ function Drawer({open,onClose}) {
     <>
       {open && <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:400}} onClick={onClose}/>}
       <div style={{
-        position:"fixed",top:0,right:0,height:"100vh",width:300,maxWidth:"85vw",
+        position:"fixed",top:0,right:0,height:"100vh",width:320,maxWidth:"85vw",
         background:"#0a0a0f",borderLeft:"1px solid #1f2937",
         transform:open?"translateX(0)":"translateX(100%)",
         transition:"transform 0.3s ease",zIndex:500,overflow:"auto",paddingTop:16,
@@ -424,7 +424,11 @@ function Drawer({open,onClose}) {
           </div>
           <button onClick={onClose} style={{background:"transparent",border:"1px solid #1f2937",color:"#6b7280",width:28,height:28,cursor:"pointer",fontSize:14,borderRadius:2}}>✕</button>
         </div>
-        <div style={{fontSize:9,color:"#374151",padding:"8px 16px",letterSpacing:1}}>Click a category to expand · Not clickable — reference only</div>
+        <div style={{fontSize:8,color:"#6b7280",padding:"8px 16px",letterSpacing:1,lineHeight:1.4}}>
+          <span style={{color:"#fb923c"}}>■ Orange = Battalion Size</span> (600+)<br/>
+          <span style={{color:"#f472b6"}}>■ Pink = Coy/Squadron Size</span> (~110)<br/>
+          <span style={{color:"#818cf8"}}>■ Purple = Platoon Scale</span> (~33)
+        </div>
         {UNITS.map((cat,i)=>(
           <div key={i} style={{borderTop:"1px solid #111"}}>
             <button onClick={()=>tog(cat.cat)} style={{
@@ -434,17 +438,21 @@ function Drawer({open,onClose}) {
             }}>
               <div style={{textAlign:"left"}}>
                 <div style={{fontSize:10,fontWeight:700,color:cat.color,letterSpacing:1}}>{cat.cat}</div>
-                <div style={{fontSize:9,color:"#4b5563",marginTop:2}}>{cat.units.length} units</div>
+                <div style={{fontSize:9,color:"#4b5563",marginTop:2}}>{cat.units.length} functional nodes</div>
               </div>
               <div style={{color:"#4b5563",fontSize:11}}>{exp[cat.cat]?"▲":"▼"}</div>
             </button>
             {exp[cat.cat] && (
               <div className="fade-in" style={{padding:"4px 0 8px 16px"}}>
                 {cat.units.map((u,j)=>(
-                  <div key={j} style={{padding:"8px 12px",borderLeft:`1px solid ${cat.color}33`,marginBottom:4}}>
-                    <div style={{fontSize:10,color:"#e2e8f0",fontWeight:600}}>{u.n}</div>
-                    <div style={{fontSize:9,color:cat.color,marginTop:2}}>{u.loc}</div>
-                    <div style={{fontSize:9,color:"#4b5563",marginTop:2,lineHeight:1.5}}>{u.r}</div>
+                  <div key={j} style={{padding:"8px 12px",borderLeft:`2px solid ${u.color}`,background:"#111119",marginBottom:6,marginRight:12,borderRadius:2}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:4}}>
+                      <div style={{fontSize:10,color:"#e2e8f0",fontWeight:600}}>{u.n}</div>
+                      <span style={{fontSize:7,background:u.color+"22",color:u.color,border:`1px solid ${u.color}55`,padding:"1px 4px",borderRadius:2,whiteSpace:"nowrap"}}>{u.type}</span>
+                    </div>
+                    <div style={{fontSize:8,color:"#9ca3af",marginTop:4}}>📍 {u.loc}</div>
+                    <div style={{fontSize:8,color:u.color,marginTop:2,fontWeight:"bold"}}>📊 {u.size} | 👑 {u.leader}</div>
+                    <div style={{fontSize:9,color:"#6b7280",marginTop:4,lineHeight:1.4,borderTop:"1px dashed #222",paddingTop:4}}>{u.r}</div>
                   </div>
                 ))}
               </div>
