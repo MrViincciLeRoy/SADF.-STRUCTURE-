@@ -13,34 +13,24 @@
 body{background:#060609;color:#e2e8f0;font-family:'Courier New',monospace}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#111}::-webkit-scrollbar-thumb{background:#333}
 .fade-in{animation:fadeIn .3s ease-out}
-@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-
-/* Tactical back link */
-.giant-map-btn {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: calc(100% - 24px);
-  margin: 16px 12px 24px 12px;
-  padding: 14px 16px;
-  background: linear-gradient(135deg, #2c1810 0%, #070a12 100%);
-  border: 1px solid #fb923c;
-  border-radius: 2px;
-  color: #ffffff;
-  text-decoration: none;
-  font-family: 'Courier New', monospace;
-  font-weight: bold;
-  font-size: 10px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(251, 146, 60, 0.1);
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.pulse{animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+.giant-map-btn{
+  display:flex;align-items:center;justify-content:space-between;
+  width:calc(100% - 24px);margin:16px 12px 24px 12px;padding:14px 16px;
+  background:linear-gradient(135deg,#2c1810 0%,#070a12 100%);
+  border:1px solid #fb923c;border-radius:2px;color:#fff;text-decoration:none;
+  font-family:'Courier New',monospace;font-weight:bold;font-size:10px;
+  letter-spacing:2px;text-transform:uppercase;transition:all .2s ease;
+  box-shadow:0 4px 12px rgba(251,146,60,.1)
 }
-.giant-map-btn:hover {
-  background: #fb923c;
-  color: #060609;
-  box-shadow: 0 0 15px rgba(251, 146, 60, 0.4);
-}
+.giant-map-btn:hover{background:#fb923c;color:#060609;box-shadow:0 0 15px rgba(251,146,60,.4)}
+.tag{display:inline-block;font-size:8px;padding:2px 6px;border-radius:2px;letter-spacing:1px;font-weight:bold;margin:2px}
+.struct-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+@media(max-width:480px){.struct-grid{grid-template-columns:1fr}}
+.contrib-bar{height:3px;border-radius:1px;margin-top:4px;transition:width .4s ease}
+.timeline-line{position:absolute;left:20px;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,transparent,#1f2937 10%,#1f2937 90%,transparent)}
 </style>
 </head>
 <body>
@@ -51,232 +41,526 @@ const { useState } = React;
 const TIMELINE_DATA = [
   {
     era: "MODERN INTEGRATION & SANDF CORE",
-    date: "1994 - PRESENT",
+    date: "1994 – PRESENT",
     title: "Operation Integration & Structural Standardization",
     color: "#4ade80",
     icon: "🇿🇦",
-    context: "The birth of the South African National Defence Force (SANDF). Following democratic elections, a massive structural consolidation fused adversarial forces into a unified national doctrine.",
-    forces: ["SADF (Regulars/Reserves)", "MK (Umkhonto we Sizwe)", "APLA (Azanian People's Liberation Army)", "TBVC Homeland Forces (Transkei, Bophuthatswana, Venda, Ciskei)"],
-    tactics: "Shift from aggressive cross-border conventional operations to regional peace support missions under UN and AU mandates, stabilization, and internal border safeguarding (Op Corona).",
-    weapons: "Standardization of the Vektor R4/R5 5.56mm systems, integration of mechanized platforms (Ratel, Casspir) into peacekeeping operations, and maintenance of specialized air/naval tracking setups.",
-    legacy: "Directly established the modern 4-man fire team and section matrices seen today. Merged British-derived staff models with local bush warfare logistics, crafting highly autonomous low-level commands."
+    shortDesc: "Fusion of 7 rival armed forces into one national doctrine post-1994 elections.",
+    context: "The birth of the South African National Defence Force (SANDF). Following the first democratic elections, a massive structural consolidation fused adversarial forces into a unified national doctrine under the National Defence Act 42 of 2002. This represented the largest military integration in post-colonial African history — seven armed structures unified under one command.",
+    forces: ["SADF (South African Defence Force — Regulars & Reserves)", "MK (Umkhonto we Sizwe — ANC armed wing)", "APLA (Azanian People's Liberation Army — PAC wing)", "TBVC Forces: Transkei Defence Force", "Bophuthatswana Defence Force", "Venda Defence Force", "Ciskei Defence Force"],
+    tactics: "Doctrinally shifted from aggressive cross-border conventional operations and bush warfare to UN/AU-mandated regional peace support missions. Internal security missions (Op Copper — Mozambique Channel anti-piracy; Op Corona — land border safeguarding; Op Prosper — DRC peacekeeping) replaced offensive planning frameworks. Human rights law became embedded in Rules of Engagement.",
+    weapons: "Standardization around the Vektor R4 (5.56×45mm) and R5 carbine across all infantry units. Integration of mechanized Ratel IFV and Casspir MRAP platforms into peacekeeping configurations. G5/G6 155mm artillery maintained but rarely deployed. Naval Valour-class frigates and Type 209 submarines modernized.",
+    structuralAdditions: [
+      { label: "Integration Boards", desc: "Formal military equivalence boards assessed rank, experience, and qualifications of all 7 forces — creating a new standardized promotion and appointment system." },
+      { label: "Service Corps", desc: "Established to absorb surplus personnel who couldn't be integrated into combat structures, providing vocational training and transition pathways." },
+      { label: "Joint Operations Division", desc: "Replaced the old SADF Ops command with a single joint operations HQ coordinating Army, Air Force, Navy, and SAMHS simultaneously." },
+      { label: "Rights-Based ROE", desc: "First formal integration of international humanitarian law and human rights obligations directly into standing Rules of Engagement — a doctrinal first for the institution." },
+      { label: "Civilian Oversight", desc: "Parliamentary oversight of the military codified through the Joint Standing Committee on Defence — civilian democratic control formalized in law." }
+    ],
+    legacy: "Directly established the modern 4-man fire team and section matrices seen today. Merged British-derived staff models with local bush warfare logistics, crafting highly autonomous low-level commands. The rank structure was unified: Privates through to Generals under one table of rank. Non-statutory force members were integrated using rank equivalence agreements that sometimes placed former enemy combatants above former SADF soldiers.",
+    doctrinalScore: { rankSystem: 95, commandStructure: 90, fieldTactics: 60, logistics: 75, weaponSystem: 70 },
+    tags: ["INTEGRATION", "PEACEKEEPING", "JOINT OPS", "ROE REFORM"]
   },
   {
     era: "THE SOUTH AFRICAN BORDER WAR",
-    date: "1966 - 1989",
+    date: "1966 – 1989",
     title: "Asymmetric Bush Warfare & Deep Mechanized Strikes",
     color: "#fb923c",
     icon: "🌵",
-    context: "A protracted conflict spanning South West Africa (Namibia) and southern Angola. Fighting against SWAPO insurgents and conventional Angolan/Cuban brigades forced rapid shifts in design.",
-    forces: ["SADF Conventional & Special Forces", "South West Africa Territorial Force (SWATF)", "PLAN (SWAPO Wing)", "FAPLA (Angolan Regulars)", "Cuban Expeditionary Forces"],
-    tactics: "Highly fluid mechanized maneuvers over vast, sandy, mine-heavy environments. Pioneered rapid overland deep-penetration strikes, counter-insurgency tracking nets, and heavy emphasis on mine-resistant vehicle design.",
-    weapons: "Introduction of the R4 assault rifle (replacing the longer R1/FN FAL), Vektor SS-77 LMG, G5/G6 155mm long-range artillery, Ratel IFV, Casspir APC, and El land mine protection technologies.",
-    legacy: "Enforced the doctrine of supreme autonomy for sub-unit structures. The modern platoon structure explicitly retains the specialized support sections (60mm/81mm mortars and heavy machine guns) to match the fire ratios perfected in the Angolan bush."
+    shortDesc: "23-year cross-border war that produced South Africa's most advanced infantry and logistics doctrine.",
+    context: "A protracted conflict spanning South West Africa (Namibia) and southern Angola — officially classified as the 'Border War' domestically but internationally recognized as a major Cold War proxy conflict. The SADF faced both PLAN (SWAPO's armed wing) insurgents running guerrilla operations and conventional Angolan/Cuban combined-arms brigades with Soviet equipment. This dual-threat environment forced unprecedented doctrinal flexibility.",
+    forces: ["SADF Conventional Infantry", "SADF Special Forces (Recces)", "South West Africa Territorial Force (SWATF)", "Koevoet (SWAPO Tracking Police — infamous CID counterinsurgency unit)", "PLAN (SWAPO's military wing)", "FAPLA (Forças Armadas Populares de Libertação de Angola)", "Cuban Expeditionary Forces (peak ~50,000 troops)", "UNITA (anti-MPLA, SADF-supported)"],
+    tactics: "Highly fluid mechanized maneuvers over vast, sandy, mine-saturated environments. The SADF pioneered rapid overland deep-penetration strikes (Operations Savannah, Reindeer, Smokeshell, Moduler, Hooper, Packer). Perfected counter-insurgency tracking nets — small specialist teams tracking PLAN spoor for days through bush. Heavy emphasis on decentralized command (section and platoon commanders making independent decisions over vast distances without radio contact).",
+    weapons: "R4 assault rifle replacing the longer R1/FN FAL for better bush carry. Vektor SS-77 general purpose machine gun, G5/G6 155mm long-range artillery, Ratel 20/60/90 IFV family, Casspir APC (globally copied for mine protection), Buffel MRAP, Puma helicopter, Mirage F1 for air superiority, Oliphant Mk1 Main Battle Tank.",
+    structuralAdditions: [
+      { label: "Battle Group Doctrine", desc: "Section/Platoon/Company structures were supplemented by the 'Battle Group' — a combined-arms formation mixing infantry, armour, artillery, and engineers under one temporary command. This became the SANDF's primary operational unit above battalion level." },
+      { label: "Fire Team Autonomy Model", desc: "Vast operational spaces meant radio comms were unreliable over 200+ km ranges. Fire teams were trained to operate independently for 72+ hours using mission-type orders — 'here is the objective, how you get there is your decision.' This is embedded in today's doctrine." },
+      { label: "Specialist Tracking Sections", desc: "Dedicated tracking specialists (spoor-following experts) were embedded at platoon level in operational units — the first institutionalization of human tracking as a military discipline." },
+      { label: "Mine-Resistant Vehicle Policy", desc: "The Casspir and Buffel were the first purpose-built MRAP vehicles in history. The doctrine of keeping soldiers off the ground in mine-threat environments fundamentally changed how South African infantry moved — every patrol plan now required a mine threat assessment." },
+      { label: "Support Weapons Integration", desc: "60mm and 81mm mortars were permanently embedded at section and platoon level respectively — not held at company reserve. This direct-support model meant fire support was always under the commander who needed it, not waiting for approval from above." },
+      { label: "Counter-Insurgency (COIN) Staff Cell", desc: "The first dedicated COIN planning cell was established at HQ level — a precursor to modern intelligence fusion cells that combine HUMINT, SIGINT, and pattern-of-life analysis for targeting." }
+    ],
+    legacy: "Enforced the doctrine of supreme autonomy for sub-unit structures. The modern platoon structure explicitly retains the specialized support sections (60mm/81mm mortars and HMG) to match the fire ratios perfected in the Angolan bush. The Casspir became the template for the US MRAP programme used in Iraq/Afghanistan. The Recce selection course, widely regarded as among the world's most brutal, was developed and refined entirely during this period.",
+    doctrinalScore: { rankSystem: 55, commandStructure: 95, fieldTactics: 100, logistics: 90, weaponSystem: 95 },
+    tags: ["COIN", "MECHANIZED", "DEEP OPS", "MINE WARFARE", "BATTLE GROUP"]
+  },
+  {
+    era: "OPERATION SAVANNAH & ANGOLAN CONVENTIONAL WAR",
+    date: "1975 – 1976",
+    title: "First Conventional Armored Clash & Multi-Domain Operations",
+    color: "#f59e0b",
+    icon: "🚀",
+    shortDesc: "South Africa's first modern combined-arms conventional war against Cuban armor and Soviet-supplied FAPLA.",
+    context: "Operation Savannah marked the SADF's first engagement against a modern conventional enemy equipped with Soviet T-34/T-54 tanks, BM-21 multiple rocket launchers, and Cuban-piloted MiG-21 aircraft. A small SADF task force (Task Force Zulu and Fox) drove 3,000km into Angola in 6 weeks, defeating MPLA/Cuban forces repeatedly — until political pressure forced withdrawal. The lessons from this short, sharp war permanently shaped SANDF doctrine.",
+    forces: ["SADF Task Force Zulu/Fox", "FNLA (National Liberation Front of Angola)", "UNITA", "FAPLA (MPLA armed forces)", "Cuban 'Internationalists' (armored and infantry)", "Soviet Military Advisors"],
+    tactics: "Long-range armored column advances at speed using Eland 90mm armored cars as the primary anti-armor platform against T-34s. First use of the G5 155mm artillery in direct fire mode against armor — effective but unorthodox. Air support coordination between Canberra bombers and ground forces. Night movement as a force multiplier against less-trained opponents.",
+    weapons: "Eland 90 armored car (French Panhard AML derivative with South African systems), Canberra bomber, G2 25-pounder artillery, early FN MAG machine guns, Boyes anti-tank rifles (still in some reserve stocks), and captured Soviet BM-21 systems.",
+    structuralAdditions: [
+      { label: "Combined Arms Planning Cell", desc: "After early confusion coordinating tanks, infantry, and artillery in the same advance, a formal combined arms planning process was created — requiring armor, infantry, artillery, and air force representatives to jointly plan every major operation." },
+      { label: "Logistics Reach Doctrine", desc: "Sustaining forces 3,000km from South Africa forced the creation of a formal 'reach logistics' doctrine — forward supply dumps, fuel pre-positioning, and air resupply protocols that are still embedded in the SANDF supply chain." },
+      { label: "Anti-Armor Section", desc: "The near-miss against Soviet T-54s with inadequate anti-armor weapons directly caused the permanent embedding of RPG-7 and later ATGM (ZT-35 Ingwe) teams at company level — not just battalion reserve." },
+      { label: "Air-Ground Coordination Protocol", desc: "The first formal Air-Ground Integration (AGI) protocols were written after coordination failures in Savannah. Forward Air Controllers (FACs) were embedded with infantry companies as a result." }
+    ],
+    legacy: "Established South Africa's reputation as a highly capable conventional military force despite its small size. More importantly, it revealed the gaps: inadequate anti-armor capacity, poor air-ground comms, and logistics fragility over extended distances — each gap was systematically closed over the following decade.",
+    doctrinalScore: { rankSystem: 40, commandStructure: 70, fieldTactics: 80, logistics: 85, weaponSystem: 75 },
+    tags: ["ARMORED", "COMBINED ARMS", "AIR SUPPORT", "LOGISTICS"]
   },
   {
     era: "WORLD WARS & PARLIAMENTARY FORCES",
-    date: "1912 - 1945",
+    date: "1912 – 1945",
     title: "The Union Defence Forces (UDF) & Global Deployments",
     color: "#818cf8",
     icon: "🌍",
-    context: "Established under the Defence Act of 1912 to unite former Boer and British forces. The UDF served with distinction across both global conflicts, adapting colonial defense models to mechanized global battles.",
-    forces: ["Union Defence Forces (UDF)", "Allied Expeditionary Commands"],
-    tactics: "Transitioned from horse-mounted mobile commandos to synchronized combined-arms structures. Deployed in North Africa (El Alamein), Italy, and East Africa, refining heavy artillery placement and mobile infantry operations.",
-    weapons: "Lee-Enfield .303 rifles, Vickers HMG, Bren light machine guns, early armored recon vehicles (Marmon-Herrington).",
-    legacy: "Cemented the formal military rank hierarchy (Privates, Corporals, Sergeants, Commissioned Officers) and the fundamental staff structure (G1-G4 administrative lines) still used within the SANDF matrix today."
+    shortDesc: "Two world wars formalized the rank table, staff structure, and combined-arms doctrine now at SANDF's core.",
+    context: "Established under the Defence Act of 1912 to unite former Boer and British forces — themselves bitter enemies a decade earlier — into a single national military. The UDF served with distinction in both world wars: German South West Africa (1915), German East Africa (1916-17), Western Front (1917-18), North Africa at El Alamein (1941-43), East Africa against Italian forces (1940-41), and Italy (1943-45). Over 340,000 South Africans served in WWII.",
+    forces: ["Union Defence Forces (UDF — full-time Active Citizen Force)", "South African Expeditionary Forces (WWI)", "1st, 2nd, 3rd South African Infantry Brigades (WWII)", "South African Air Force (formed 1920)", "South African Naval Forces (formed 1922)", "Ossewabrandwag (pro-German internal resistance — fought against UDF domestically)"],
+    tactics: "Transitioned from horse-mounted mobile commandos to synchronized combined-arms structures. El Alamein (1942) involved the 1st SA Division in set-piece armored warfare with coordinated artillery, infantry assault, and engineer breaching under Montgomery. East Africa involved rapid mobile operations using motorized infantry against fixed Italian defensive positions. Italy involved classic mountain warfare with platoon-level section attacks.",
+    weapons: "Lee-Enfield .303 No.4 rifle (standard infantry), Vickers .303 HMG, Bren .303 LMG, 2-pounder and later 6-pounder anti-tank guns, 25-pounder field gun (the backbone of SA artillery for 30 years), Crusader and Sherman tanks, Marmon-Herrington armored cars.",
+    structuralAdditions: [
+      { label: "Formal Rank Table", desc: "The British rank structure was fully formalized — Private, Lance Corporal, Corporal, Sergeant, Staff Sergeant, Warrant Officer, 2nd Lieutenant through General. This exact table, slightly modified, is the SANDF's current table of rank." },
+      { label: "G1-G4 Staff System", desc: "The British Army's administrative staff system was adopted wholesale: G1 (Personnel), G2 (Intelligence), G3 (Operations), G4 (Logistics). This staff model still governs every battalion and brigade HQ in the SANDF." },
+      { label: "Corps and Branch System", desc: "Specialist corps were established: Infantry, Armour, Artillery, Engineers, Signals, Medical, Logistics — each with separate training, career paths, and specialist equipment. The modern SANDF branch structure maps directly to UDF corps established 1912-1945." },
+      { label: "Section Attack Drills", desc: "Formalized fire-and-movement section attack drills (advance to contact, section attack right/left flanking) were adopted from British Infantry Training Pamphlets and are still the core of SANDF battle drills today." },
+      { label: "Regimental System", desc: "The British regimental identity system — where units maintain historical names, battle honours, and traditions across generations — was fully adopted. This is why 'Regiment Mooirivier' and similar unit names still exist." },
+      { label: "Officer Commissioning Process", desc: "Officer cadet training, commissioning ceremonies, and the clear separation of commissioned and non-commissioned officer responsibilities were institutionalized — still intact in today's SANDF." }
+    ],
+    legacy: "Cemented the formal military rank hierarchy and the fundamental staff structure (G1-G4 administrative lines) still used within the SANDF matrix today. The 25-pounder field gun experience directly informed how SA artillery doctrine was written — even after the gun was replaced by the G5/G6. Every SANDF officer still completes a Junior Staff Course that teaches the same G1-G4 staff framework adopted from the British in 1912.",
+    doctrinalScore: { rankSystem: 100, commandStructure: 95, fieldTactics: 75, logistics: 80, weaponSystem: 60 },
+    tags: ["STAFF SYSTEM", "RANK TABLE", "COMBINED ARMS", "CORPS SYSTEM"]
   },
   {
     era: "THE ANGLO-BOER WARS",
-    date: "1880 - 1902",
+    date: "1880 – 1902",
     title: "Asymmetric Commando Tactics vs. Imperial Attrition",
     color: "#22d3ee",
     icon: "🐎",
-    context: "Two major conflicts pitting the independent Boer Republics (Transvaal and Orange Free State) against the British Empire, marking a massive turning point in modern infantry tactics.",
-    forces: ["Boer Commando Units", "British Imperial Forces"],
-    tactics: "The Boers rejected rigid formations, operating in loosely structured 'Commandos' that prioritized expert marksmanship, rapid mounted mobility, camouflage, and devastating ambush loops. British forces countered with scorched-earth policies and structural blockhouse defense lines.",
-    weapons: "Mauser 7x57mm bolt-action rifles (Boer), Lee-Metford / Lee-Enfield rifles (British), Maxim machine guns, and early Krupp field artillery.",
-    legacy: "Shocked global militaries into abandoning bright combat uniforms for khaki/neutral tones. Left behind the term 'Commando' and established the core South African tactical belief that small, highly flexible fire units utilizing decentralized command can successfully match vastly superior conventional forces."
+    shortDesc: "The wars that permanently changed global infantry tactics — and defined South Africa's decentralized command philosophy.",
+    context: "Two major conflicts pitting the independent Boer Republics (Transvaal and Orange Free State) against the British Empire. The First Boer War (1880-81) was a short, sharp Boer victory at Majuba Hill. The Second (1899-1902) was a 3-year war of attrition: 450,000 British troops vs ~87,000 Boer combatants. The Boers held their own through guerrilla warfare for two years after conventional resistance ended — only broken by concentration camps and scorched earth destroying their logistical base.",
+    forces: ["Boer Commando Units (Transvaal & OFS)", "Boer Bittereinders (bitter-enders — those who fought to the very end)", "British Imperial Forces (peak 450,000 — from Canada, Australia, NZ, India)", "Cape Rebels (colonial Boers who joined the fight)", "National Scouts (Boers who switched sides)"],
+    tactics: "The Boers rejected all rigid formations, operating in loosely structured 'Commandos' of 300-3,000 men led by elected officers (Veldkornets and Commandants). Expert marksmanship with Mauser rifles from concealed positions, rapid mounted mobility to break contact before British numerical superiority could be applied, devastating ambush loops at Colenso, Spion Kop, and Magersfontein. British response: blockhouse defensive lines across thousands of km to restrict Boer movement, plus scorched earth destroying farms and moving civilians into concentration camps.",
+    weapons: "Mauser 7×57mm bolt-action rifle (Boer) — flat trajectory, high velocity, effective to 800m+. Lee-Metford/Lee-Enfield .303 (British). Maxim HMG (both sides). Creusot 'Long Tom' 155mm siege gun (Boer, from France). Krupp 75mm field guns.",
+    structuralAdditions: [
+      { label: "The Commando System Codified", desc: "The Boer 'Commando' — a civilian militia called out for service, organizing itself locally, feeding itself from the land, dispersing back to farms when needed — was so effective it was formally adopted. The SA Defence Act 1912 built on this model. The word 'Commando' itself entered global military vocabulary meaning elite rapid-response unit." },
+      { label: "Decentralized Mission Command", desc: "Boer Commandos operated without formal orders — Veldkornets made tactical decisions on the spot based on the overall strategic intent. This 'mission-type orders' philosophy (tell soldiers WHAT to achieve, not HOW) became a founding principle of SA military doctrine and is still explicitly taught at officer training." },
+      { label: "Camouflage & Field Craft", desc: "Boer use of khaki/earth-toned clothing instead of bright uniforms shocked global militaries. Within 10 years, every major army had adopted neutral-toned field uniforms. SANDF nutria (brown) and later olive/camouflage patterns trace directly to this moment." },
+      { label: "Marksmanship as Primary Skill", desc: "Boer farmers were trained from childhood on accurate rifle fire. The SADF/SANDF's emphasis on individual marksmanship above all other infantry skills — mandatory annual Personal Weapons Test (PWT) for every soldier — traces directly to this heritage." },
+      { label: "Logistical Vulnerability Doctrine", desc: "British success came ultimately from destroying the Boer logistical base (farms, food, horses). This lesson embedded deeply: SANDF doctrine explicitly identifies logistics as the primary vulnerability to be protected and the primary target to be attacked." },
+      { label: "Intelligence & Counter-Intelligence", desc: "The British National Scouts (Boer turncoats) and Boer intelligence networks created the first institutionalized military intelligence structures in South African history — precursors to the SANDF's G2 intelligence branch." }
+    ],
+    legacy: "Left behind the term 'Commando' and established the core South African tactical belief that small, highly flexible fire units utilizing decentralized command can successfully match vastly superior conventional forces. The Boer Wars were studied in every major military academy globally by 1905. The SANDF's Small Unit Leadership course still explicitly references Boer commando tactics as the doctrinal ancestor of modern section-level leadership.",
+    doctrinalScore: { rankSystem: 30, commandStructure: 85, fieldTactics: 95, logistics: 60, weaponSystem: 65 },
+    tags: ["COMMANDO", "GUERRILLA", "MARKSMANSHIP", "MISSION COMMAND"]
+  },
+  {
+    era: "THE ZULU & BRITISH FRONTIER WARS",
+    date: "1838 – 1879",
+    title: "The Anglo-Zulu War & Lessons of Positional Defense",
+    color: "#ef4444",
+    icon: "🛡️",
+    shortDesc: "Rorke's Drift and Isandlwana proved that positional defense and fire discipline can defeat mass assault — or fail catastrophically.",
+    context: "A series of major conflicts between expanding British colonial forces, Boer settlers, and African kingdoms — culminating in the Anglo-Zulu War of 1879. The Battle of Isandlwana (22 January 1879) saw ~1,300 British troops annihilated by 20,000 Zulu in one of the British Army's worst ever defeats. Hours later, 150 soldiers at Rorke's Drift held off 4,000 Zulu warriors through the night — producing 11 Victoria Crosses and becoming a case study in small-unit defensive doctrine.",
+    forces: ["British Imperial Forces (24th Regiment of Foot, mounted colonial units)", "Natal Native Contingent (African auxiliary forces)", "Zulu Kingdom Impi (main army ~25,000)", "Boer Voortrekker Commandos (Blood River 1838)", "Various Nguni kingdoms (Ndebele, Swazi, Pedi)"],
+    tactics: "British formations relied on the disciplined two-rank volley fire system — but Isandlwana proved that against sufficient Zulu numbers in broken terrain, the linear formation collapsed. Rorke's Drift demonstrated that prepared defensive positions, clear fields of fire, and ammunition management could overcome mass assault. Blood River (1838) — 464 Voortrekkers in a laager defeated 10,000-15,000 Ndebele/Zulu — established the laager as the definitive SA defensive formation.",
+    weapons: "Martini-Henry .577/450 single-shot breech-loading rifle (British, 1879), assegai and iklwa (Zulu), flintlock muskets (Voortrekkers at Blood River), 7-pounder mountain guns (British field artillery).",
+    structuralAdditions: [
+      { label: "The Laager Defensive Doctrine", desc: "The wagon laager — vehicles formed into a defensive circle with infantry inside — became so ingrained in SA military culture that 'laager mentality' entered the national vocabulary. Modern SANDF vehicle harbour drills still reflect laager principles: vehicles positioned outwards, crew positions covering all angles, no vehicle left isolated." },
+      { label: "Fire Discipline & Ammunition Management", desc: "Rorke's Drift soldiers ran critically short of .577 ammunition partway through the night battle — defenders had to break open reserve cases with bayonets mid-engagement. This directly informed the SANDF's obsessive ammunition accountability culture: every round signed for, counted before and after, no surplus left unaccounted." },
+      { label: "Obstacle Integration", desc: "The defenders at Rorke's Drift used mealie bags, biscuit boxes, and wagons to create barriers. This improvised fieldcraft became formal doctrine: fighting positions must always incorporate obstacles to slow the enemy before they reach the defensive line. Still taught in SANDF basic training." },
+      { label: "Auxiliary & Allied Force Integration", desc: "British use of the Natal Native Contingent — African troops fighting alongside British regulars — was one of the first institutionalized examples of multi-ethnic military integration in Southern African history. The command problems this created (language barriers, different fighting methods) informed later integration doctrine." },
+      { label: "Terrain Analysis Doctrine", desc: "Isandlwana's catastrophic failure was partly caused by a failure to properly secure the terrain — the British commander failed to laager or entrench. 'Ground appreciation' — formally analysing terrain features before every deployment — became a mandatory step in SANDF orders processes." }
+    ],
+    legacy: "The Zulu frontier wars permanently embedded small-unit defensive doctrine and ammunition accountability into South African military culture. Rorke's Drift remains on the SANDF officer training curriculum. The Battle of Blood River established the principle that a prepared defensive position with good fields of fire multiplies combat power — a principle still at the heart of SANDF section and platoon defensive drills.",
+    doctrinalScore: { rankSystem: 20, commandStructure: 45, fieldTactics: 80, logistics: 55, weaponSystem: 50 },
+    tags: ["DEFENSIVE DOCTRINE", "FIRE DISCIPLINE", "LAAGER", "TERRAIN ANALYSIS"]
   },
   {
     era: "DEFENSIVE CONSOLIDATION & KING MOSHOESHOE",
-    date: "1820 - 1870",
+    date: "1820 – 1870",
     title: "Mountain Fortifications & Adaptive Diplomacy",
     color: "#a78bfa",
     icon: "⛰️",
-    context: "Amid the regional upheavals of the Difaqane/Mfecane, King Moshoeshoe I synthesized scattered groups into a cohesive nation (Basotho), managing existential threats from expanding tribal powers and migrating Voortrekkers.",
-    forces: ["Basotho Defensive Confraternity"],
-    tactics: "Mastery of natural fortress topography (Thaba Bosiu). Utilizing sheer cliffs and elevated choke points to neutralize superior numbers, combined with highly coordinated cavalry harassment arrays and adaptive international diplomacy.",
-    weapons: "Traditional spears and clubs, rapidly upgraded via trade to European smoothbore muskets, horses, and captured field armaments.",
-    legacy: "Pioneered adaptive defensive fortification doctrines and early multi-domain threat management (combining unconventional warfare with diplomatic leverage), showcasing how geographical features can multiply the efficiency of a smaller defensive unit."
+    shortDesc: "Moshoeshoe I built the most successful defensive nation-state in Southern Africa — through terrain, not numbers.",
+    context: "Amid the regional upheavals of the Difaqane/Mfecane, King Moshoeshoe I (1786-1870) synthesized scattered, traumatized refugee groups into a cohesive nation (the Basotho) — managing simultaneous existential threats from the Ndebele, Tlokwa, expanding Boer Trekkers, and eventually the British Empire. He never had military superiority. He consistently had strategic superiority.",
+    forces: ["Basotho Defensive Confraternity (cavalry-based mixed infantry/horse)", "Griqua allied forces (firearm-equipped mixed-heritage traders)", "Various refugee groups absorbed into the Basotho nation"],
+    tactics: "Mastery of natural fortress topography — Thaba Bosiu mesa (the 'Mountain of the Night') became an impenetrable stronghold because its narrow access paths could be held by small numbers against any assault. The Basotho used cattle as a diplomatic and economic instrument: raiding cattle from enemies, returning them as peace gestures, using them to buy firearms and horses. Moshoeshoe negotiated directly with the British Crown when Boer pressure became existential — the first African leader to successfully leverage colonial power politics against another colonial power.",
+    weapons: "Traditional assegais, clubs and shields; rapidly upgraded via Griqua trade to European smoothbore muskets and horses; eventually acquiring Enfield rifles and small field pieces.",
+    structuralAdditions: [
+      { label: "Terrain-Based Force Multiplication", desc: "Moshoeshoe's doctrine explicitly chose terrain that multiplied the fighting power of small forces. Thaba Bosiu's summit was defensible by dozens against thousands. This principle — 'ground selection multiplies combat power' — is now a formal SANDF doctrine element in the Defence of a Position lesson series." },
+      { label: "Multi-Domain Threat Management", desc: "Simultaneously managing military, diplomatic, economic, and information threats against multiple enemies is what today's doctrine calls 'Multi-Domain Operations.' Moshoeshoe executed this intuitively — and more successfully than almost any contemporary leader." },
+      { label: "Absorption & Integration of Refugees", desc: "Moshoeshoe built his state by integrating displaced groups from 20+ different chiefdoms. The integration protocols he used — offering protection in exchange for loyalty and military service — are a progenitor of what the post-1994 SANDF attempted during its own integration." },
+      { label: "Strategic Reserve Concept", desc: "Moshoeshoe kept herds in remote mountain valleys as strategic reserves — accessible only to Basotho cavalry. This concept of a protected strategic reserve, positioned away from the main defensive line but accessible when needed, mirrors modern doctrine for reserve placement in a defensive operation." }
+    ],
+    legacy: "Pioneered adaptive defensive fortification doctrines and early multi-domain threat management. Moshoeshoe's success showed Southern African military thinkers that geographical intelligence — knowing your ground better than your enemy — is the primary force multiplier for a numerically inferior force. This lesson echoed through Boer Commando planning, SADF border war operations, and is explicitly referenced in the SANDF's terrain appreciation doctrine.",
+    doctrinalScore: { rankSystem: 10, commandStructure: 60, fieldTactics: 75, logistics: 50, weaponSystem: 30 },
+    tags: ["FORTIFICATION", "TERRAIN", "DIPLOMACY", "STRATEGIC RESERVE"]
   },
   {
     era: "THE MFECANE & THE ZULU MILITARY REVOLUTION",
-    date: "1816 - 1828",
-    title: "Shaka Zulu's Close-Quarter Doctrine & Tactical Synthesis",
-    color: "#ef4444",
-    icon: "🛡️",
-    context: "A period of intense institutional warfare and migration across Southern Africa. Shaka, monarch of the Zulu Kingdom, radically overhauled old ritualistic battle frameworks into an absolute total war mechanism.",
-    forces: ["The Zulu Impi Network"],
-    tactics: "The revolutionary *Impi Horns of the Buffalo* (*Izimpondo Zankomo*) formation: a dense center 'chest' pins the enemy, flanking 'horns' encircle and trap the perimeter, and a hidden 'loins' reserve stays back under central command to exploit weak points.",
-    weapons: "The *Iklwa* (a short, broad-bladed stabbing spear maximizing close-quarters lethality) replacing long throwing spears, and heavy ox-hide shields structurally integrated into hand-to-hand parrying drills.",
-    legacy: "Introduced strict standardization of equipment, mandatory physical conditioning arrays, and structured logistics chains (youth support groups carrying supplies). The *Horns of the Buffalo* remains a pristine historical manifestation of the tactical containment and flanking maneuvers drilled by modern SANDF infantry platoons."
+    date: "1816 – 1828",
+    title: "Shaka Zulu's Close-Quarter Doctrine & the First Professional Army",
+    color: "#f472b6",
+    icon: "⚔️",
+    shortDesc: "Shaka created Sub-Saharan Africa's first professional standing army — with standardized equipment, logistics, and tactical doctrine.",
+    context: "A period of intense institutional warfare and mass population displacement across Southern Africa. Shaka kaSenzangakhona, monarch of the Zulu Kingdom, inherited a minor chieftaincy of ~1,500 people in 1816 and within 12 years built an empire controlling ~2 million people and an army of 20,000-40,000 full-time soldiers — the largest and most sophisticated military force in Sub-Saharan African history at that point.",
+    forces: ["The Zulu Impi (regimental army — amabutho system)", "Absorbed Nguni clans (Mthethwa, Qwabe, Langeni)", "Breakaway formations: Mzilikazi's Ndebele, Soshangane's Gaza Kingdom"],
+    tactics: "The revolutionary *Impondo Zankomo* (Horns of the Buffalo) formation: dense center 'chest' (isifuba) pins and engages the enemy frontally; long flanking 'horns' (izimpondo) encircle at speed to trap the enemy; concealed 'loins' (umuva) reserve is held back seated with backs to the battle — to prevent premature commitment — and deployed by Shaka personally to exploit weak points. Warriors who engaged without orders faced execution. Discipline was absolute and enforced.",
+    weapons: "The *iklwa* — a short, broad-bladed stabbing spear (replacing the traditional long throwing *assegai*) maximizing close-quarters lethality. Heavy cowhide shields integrated into a shield-punch parrying system where the warrior hooks the left edge of an enemy shield and twists to expose the enemy's left armpit for a kill thrust. Running barefoot gave Zulu forces a mobility advantage — Impi could cover 50+ miles per day without supply wagons.",
+    structuralAdditions: [
+      { label: "Regimental System (Ibutho)", desc: "Age-grade regiments — every Zulu man of the same approximate age group formed an ibutho and lived together in a military kraal, training together, until Shaka released them to marry. This created unit cohesion through shared identity. The modern SANDF regimental system (where units maintain identity across generations) is a direct conceptual descendant." },
+      { label: "Standardized Equipment Across All Units", desc: "For the first time in the region's military history, every soldier in the same ibutho carried identical equipment — same shield colour, same spear type, same kit. Uniformity of equipment enabling interchangeable soldiers within formations. This principle — equipment standardization enabling tactical flexibility — is now SANDF policy for every item from rifles to body armour." },
+      { label: "Mandatory Physical Conditioning", desc: "Daily running, formation drills, and weapons practice were mandatory and institutionalized. Soldiers who failed physical standards were publicly humiliated or executed. Modern SANDF Physical Fitness Test (PFT) requirements and annual minimum fitness standards for all serving soldiers descend from this principle." },
+      { label: "Youth Logistics Corps (uDibi)", desc: "Young boys (udibi) carried warriors' sleeping mats and rations, freeing fighters from logistical loads. This is the conceptual origin of the dedicated logistics echelon separated from the fighting echelon — still reflected in how the SANDF separates combat troops from Service Corps support." },
+      { label: "Reserve Force Doctrine", desc: "The 'loins' reserve — seated with backs to the battle to prevent premature visual engagement — demonstrates the first known doctrine of a deliberately withheld reserve force under central command control. SANDF platoon and company planning still mandates a formal reserve allocation in every defensive and offensive plan." },
+      { label: "Intelligence on Enemy Formations", desc: "Shaka used scouts extensively to identify enemy positions, strengths, and patrol patterns before committing forces. The formal intelligence preparation of the battlefield — mandatory in all SANDF operation orders — traces this principle to pre-battle Zulu reconnaissance doctrine." }
+    ],
+    legacy: "Introduced strict standardization of equipment, mandatory physical conditioning, and structured logistics chains. The Horns of the Buffalo remains a pristine historical manifestation of the flanking and encirclement maneuvers drilled by modern SANDF infantry platoons. Shaka's ibutho system is the oldest ancestor of the SANDF's regimental identity structure. His logistics corps concept is the oldest ancestor of the Service Corps. His reserve doctrine is the oldest explicit ancestor of SANDF reserve force doctrine.",
+    doctrinalScore: { rankSystem: 35, commandStructure: 80, fieldTactics: 90, logistics: 70, weaponSystem: 45 },
+    tags: ["REGIMENTAL SYSTEM", "STANDARDIZATION", "RESERVE DOCTRINE", "ENCIRCLEMENT"]
+  },
+  {
+    era: "DIFAQANE MIGRATIONS & REGIONAL STATE COLLAPSE",
+    date: "1815 – 1840",
+    title: "Total War, Refugee Armies & Adaptive Survival Tactics",
+    color: "#06b6d4",
+    icon: "🌊",
+    shortDesc: "The Difaqane produced multiple competing military doctrines as dozens of groups fought for survival across a collapsing regional order.",
+    context: "The Difaqane (Sotho: 'the crushing') / Mfecane (Zulu: 'the hammering') was a period of near-total regional state collapse across Southern Africa. Triggered partly by Zulu expansionism, climate stress (drought), trade disruption, and the rise of competing military powers, it produced a cascade of forced migrations, refugee armies, and new military-political formations. At least 1-2 million people died. New states emerged from the chaos — Basotho, Swazi, Ndebele, Gaza — each with distinctive military adaptations.",
+    forces: ["Ndebele of Mzilikazi (breakaway Zulu formation)", "Swazi Kingdom (defensive adaptation under Sobhuza I)", "Griqua commando forces (horse-mounted, firearm-equipped mixed-heritage groups)", "Sotho refugee coalitions", "Voortrekker advance parties (from 1836)"],
+    tactics: "Mzilikazi adopted Zulu tactical formations but integrated captured cattle and refugees as logistical assets. Griqua forces pioneered the horse-mounted firearm commando — the direct technical precursor to the Boer Commando. Swazi defensive diplomacy (strategic marriages, tribute payments) minimized military confrontation. Multiple groups simultaneously developed laager defensive tactics independently.",
+    weapons: "Mix of traditional weapons with increasing incorporation of European firearms through Griqua and Portuguese trade networks. Horses became the key asymmetric multiplier — groups with horses and guns dominated those without.",
+    structuralAdditions: [
+      { label: "Adaptive Organizational Flexibility", desc: "Survival during the Difaqane required absorbing strangers rapidly, training them for combat, and integrating them into existing tactical formations within days. The SANDF's integration of 7 forces post-1994 had historical precedent in exactly this kind of rapid organizational absorption." },
+      { label: "Horse-Firearm Commando (Griqua)", desc: "The Griqua combined European horses, firearms, and San tracking skills into a highly mobile mounted commando — the most effective fighting force per capita in the region by the 1820s. This directly preceded and influenced the Boer Commando system." },
+      { label: "Intelligence Networks Across Vast Distances", desc: "Survival required knowing where competing armed groups were moving before they arrived. Extensive runner-based intelligence networks operated across hundreds of kilometers. The principle of long-range pre-contact intelligence as a survival necessity was deeply embedded in regional military culture." }
+    ],
+    legacy: "The Difaqane produced the regional military culture of extreme tactical adaptability — the ability to absorb new weapons, new personnel, and new tactics rapidly under pressure. This adaptability is a consistent theme in all subsequent South African military history and is embedded in SANDF officer training as a required leadership quality.",
+    doctrinalScore: { rankSystem: 10, commandStructure: 40, fieldTactics: 65, logistics: 45, weaponSystem: 35 },
+    tags: ["ADAPTABILITY", "HORSE COMMANDO", "SURVIVAL TACTICS", "INTELLIGENCE"]
   },
   {
     era: "EARLIEST COLONIAL CLASHES & THE COMMANDO SYSTEM",
-    date: "1659 - 1799",
+    date: "1659 – 1799",
     title: "The Dutch-Khoi Wars & Frontier Militia Formations",
     color: "#f472b6",
     icon: "⚓",
-    context: "The earliest recorded European-indigenous conflicts in South Africa. As the Dutch East India Company (VOC) expanded past the Cape Peninsula, structural resource clashes forced the creation of local armed paradigms.",
-    forces: ["Khoikhoi Resistance Coalitions", "VOC Soldiers & Local Settler Militias"],
-    tactics: "Khoikhoi units executed rapid cattle-raiding counter-offensives and fluid guerrilla attrition loops utilizing brush cover. The VOC and expanding frontier settlers countered by initializing the *Commando System*—highly mobile, civilian-conscripted horse units designed for tracking and swift reprisal strikes.",
-    weapons: "Traditional Khoikhoi composite bows, poisoned arrows, and fire-hardened lances; matched against Dutch matchlock and flintlock muskets.",
-    legacy: "Gave birth to the foundational *Commando system*—a decentralized, rapid-response militia model that defined South African military planning for over two centuries, demonstrating that local terrain mastery dictates tactical success."
+    shortDesc: "The birth of the Commando system — the decentralized civilian militia model that defined SA military planning for 200 years.",
+    context: "The earliest recorded European-indigenous conflicts in South Africa. As the Dutch East India Company (VOC) expanded past the Cape Peninsula, resource clashes (cattle, land, water) forced the creation of local armed paradigms. The First and Second Khoi-Dutch Wars (1659-60, 1673-77) and the frontier wars of the 1700s progressively pushed the Cape Colony's boundaries inland — and forced the creation of ever-more-sophisticated armed settler structures to manage the expanding frontier.",
+    forces: ["Khoikhoi ('Khoi' — indigenous pastoralists) Resistance Coalitions", "San ('Bushmen') resistance groups (guerrilla raiding specialists)", "VOC Regular Soldiers (poorly paid, often deserting)", "Settler Militia (Burghers) — the first Commandos", "Xhosa Confederacy (from late 1700s — Cape Frontier Wars)"],
+    tactics: "Khoikhoi units executed rapid cattle-raiding counter-offensives and fluid guerrilla attrition loops utilizing dense bush cover — the VOC's musket-based linear tactics were largely ineffective against this. The VOC response: the *Burgher Commando* — conscripted male settlers required to provide their own horse, musket, and provisions, organized under an elected field-commandant, operating in rapid-response mounted pursuits. Each Commando was a temporary, self-sufficient fighting unit that dissolved back to farms after operations.",
+    weapons: "Khoikhoi: composite bows, hardwood javelins, poison arrows, fire-hardened throwing sticks. VOC/Settler: flintlock muskets and pistols, VOC artillery at fixed positions, sabers.",
+    structuralAdditions: [
+      { label: "The Burgher Commando (First Institutionalization)", desc: "First formally established in 1715 by VOC Governor Maurits Pasques de Chavonnes. Every adult male settler was legally required to participate in Commando call-outs. This was the world's first compulsory citizen-soldier system in Africa — the institutional ancestor of the SADF's Citizen Force and the SANDF's Reserve Force." },
+      { label: "Self-Sufficiency Doctrine", desc: "Commandos brought their own horse, gun, and 8-day rations. The state provided nothing. This embedded a deep institutional assumption that soldiers at field level must be resourceful and self-sustaining — a principle that shaped bush war operations 250 years later, when SADF operators spent 72-96 hours self-sustaining in the Angolan bush without resupply." },
+      { label: "Elected Tactical Leadership", desc: "Field-Commandants and Veld-Cornets were elected by the Commando members — not appointed from above. This created an accountability model unique in global military history: leaders who lost the confidence of their unit were replaced by election, mid-campaign if necessary. The concept of leadership accountability to those being led — rather than purely to those above — is woven into SANDF NCO doctrine." },
+      { label: "Terrain Mastery as Primary Qualification", desc: "Commando effectiveness depended entirely on knowing the terrain better than the enemy. San trackers were employed as auxiliary scouts — the first institutionalized use of specialist trackers in South African military history. This same principle produced the SADF's specialist tracking platoons 250 years later." },
+      { label: "Legal Framework for Military Service", desc: "VOC Commando regulations were the first written legal framework for military obligation in Southern Africa. The Defence Act of 1912 and the current Defence Act of 2002 are the legal descendants of these first VOC military ordinances." }
+    ],
+    legacy: "Gave birth to the foundational Commando system — a decentralized, rapid-response militia model that defined South African military planning for over two centuries. The San tracker auxiliary concept produced the SADF's specialist tracking platoons. The elected leadership concept influenced the NCO accountability culture. The self-sufficiency requirement shaped bush war operational doctrine. Almost every distinctive feature of South African military culture can be traced, partially, to the frontier Commando system of the 1700s.",
+    doctrinalScore: { rankSystem: 15, commandStructure: 70, fieldTactics: 60, logistics: 40, weaponSystem: 30 },
+    tags: ["COMMANDO ORIGIN", "CITIZEN SOLDIER", "TRACKER SYSTEM", "SELF-SUFFICIENCY"]
   }
 ];
 
-function TimelineCard({ data, isSelected, onSelect }) {
+const DOC_AREAS = ["rankSystem","commandStructure","fieldTactics","logistics","weaponSystem"];
+const DOC_LABELS = { rankSystem:"Rank System", commandStructure:"Command Structure", fieldTactics:"Field Tactics", logistics:"Logistics", weaponSystem:"Weapon Systems" };
+const DOC_COLORS = { rankSystem:"#4ade80", commandStructure:"#22d3ee", fieldTactics:"#f59e0b", logistics:"#818cf8", weaponSystem:"#ef4444" };
+
+function DoctrineBar({ area, score, color }) {
   return (
-    <div 
-      onClick={onSelect}
-      className="fade-in"
-      style={{
-        background: isSelected ? "#0d1527" : "#0f0f1a",
-        border: `1px solid ${isSelected ? data.color : "#1f2937"}`,
-        borderLeft: `4px solid ${data.color}`,
-        padding: "16px",
-        marginBottom: "16px",
-        cursor: "pointer",
-        borderRadius: "2px",
-        transition: "all 0.2s ease"
-      }}
-    >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-        <span style={{ fontSize: "9px", color: data.color, letterSpacing: "2px", fontWeight: "bold" }}>{data.era}</span>
-        <span style={{ fontSize: "10px", background: data.color + "22", color: data.color, padding: "2px 6px", borderRadius: "2px", fontWeight: "bold" }}>{data.date}</span>
+    <div style={{ marginBottom: 6 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 8, color: "#6b7280", marginBottom: 3, letterSpacing: 1 }}>
+        <span>{DOC_LABELS[area]}</span>
+        <span style={{ color }}>{score}%</span>
       </div>
-      
-      <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "4px" }}>
-        <span style={{ fontSize: "20px" }}>{data.icon}</span>
-        <h3 style={{ fontSize: "12px", color: "#fff", letterSpacing: "1px" }}>{data.title}</h3>
+      <div style={{ background: "#1f2937", height: 3, borderRadius: 1, overflow: "hidden" }}>
+        <div style={{ width: `${score}%`, height: "100%", background: color, borderRadius: 1, transition: "width 0.6s ease" }} />
+      </div>
+    </div>
+  );
+}
+
+function StructuralCard({ item }) {
+  return (
+    <div style={{ background: "#0a0a14", border: "1px solid #1f2937", borderLeft: "3px solid #374151", padding: "10px 12px", borderRadius: 2 }}>
+      <div style={{ fontSize: 9, color: "#9ca3af", fontWeight: "bold", letterSpacing: 1, marginBottom: 4 }}>{item.label}</div>
+      <div style={{ fontSize: 10, color: "#6b7280", lineHeight: 1.7 }}>{item.desc}</div>
+    </div>
+  );
+}
+
+function TimelineCard({ data, isSelected, onSelect, index }) {
+  return (
+    <div style={{ position: "relative", paddingLeft: 32, marginBottom: 20 }}>
+      {/* Timeline node */}
+      <div style={{
+        position: "absolute", left: 12, top: 18, width: 14, height: 14, borderRadius: "50%",
+        background: data.color + "22", border: `2px solid ${data.color}`,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        fontSize: 7, zIndex: 2
+      }}>
+        <div style={{ width: 5, height: 5, borderRadius: "50%", background: data.color }} />
       </div>
 
-      <p style={{ fontSize: "10px", color: "#9ca3af", marginTop: "8px", lineHeight: "1.6" }}>{data.context}</p>
-
-      {isSelected && (
-        <div style={{ marginTop: "14px", paddingTop: "12px", borderTop: "1px dashed #222" }} className="fade-in">
-          <div style={{ marginBottom: "10px" }}>
-            <span style={{ fontSize: "8px", color: data.color, letterSpacing: "1px", display: "block", fontWeight: "bold", marginBottom: "2px" }}>OPERATIONAL FORCES</span>
-            <div style={{ fontSize: "9px", color: "#e2e8f0" }}>{data.forces.join(" | ")}</div>
+      <div
+        onClick={onSelect}
+        className="fade-in"
+        style={{
+          background: isSelected ? "#0d1117" : "#0c0c14",
+          border: `1px solid ${isSelected ? data.color : "#1a1a2e"}`,
+          borderLeft: `4px solid ${data.color}`,
+          padding: "14px 16px",
+          cursor: "pointer",
+          borderRadius: 2,
+          transition: "all 0.2s ease",
+          boxShadow: isSelected ? `0 0 20px ${data.color}11` : "none"
+        }}
+      >
+        {/* Header */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 8 }}>
+          <div>
+            <div style={{ fontSize: 8, color: data.color, letterSpacing: 2, fontWeight: "bold", marginBottom: 3 }}>{data.era}</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 18 }}>{data.icon}</span>
+              <h3 style={{ fontSize: 12, color: "#fff", letterSpacing: 1, lineHeight: 1.3 }}>{data.title}</h3>
+            </div>
           </div>
-          
-          <div style={{ marginBottom: "10px" }}>
-            <span style={{ fontSize: "8px", color: data.color, letterSpacing: "1px", display: "block", fontWeight: "bold", marginBottom: "2px" }}>DOCTRINE & TACTICS USED</span>
-            <p style={{ fontSize: "10px", color: "#9ca3af", lineHeight: "1.5" }}>{data.tactics}</p>
-          </div>
-
-          <div style={{ marginBottom: "10px" }}>
-            <span style={{ fontSize: "8px", color: data.color, letterSpacing: "1px", display: "block", fontWeight: "bold", marginBottom: "2px" }}>WEAPONRY & TECH PROFILE</span>
-            <p style={{ fontSize: "10px", color: "#9ca3af", lineHeight: "1.5" }}>{data.weapons}</p>
-          </div>
-
-          <div style={{ marginTop: "12px", padding: "8px 10px", background: data.color + "11", border: `1px solid ${data.color}33` }}>
-            <span style={{ fontSize: "8px", color: data.color, letterSpacing: "1px", display: "block", fontWeight: "bold", marginBottom: "2px" }}>EVOLUTIONARY IMPACT TO TODAY'S STRUCTURE</span>
-            <p style={{ fontSize: "10px", color: "#e2e8f0", lineHeight: "1.5" }}>{data.legacy}</p>
+          <div style={{ flexShrink: 0, textAlign: "right" }}>
+            <div style={{ fontSize: 9, background: data.color + "22", color: data.color, padding: "3px 7px", borderRadius: 2, fontWeight: "bold", letterSpacing: 1, whiteSpace: "nowrap" }}>{data.date}</div>
           </div>
         </div>
-      )}
-      
-      {!isSelected && (
-        <div style={{ fontSize: "8px", color: "#4b5563", marginTop: "8px", textAlign: "right", letterSpacing: "1px" }}>
-          TAP TO EXPAND DOCTRINAL PROFILE ▽
+
+        {/* Tags */}
+        <div style={{ marginBottom: 8 }}>
+          {(data.tags || []).map((t, i) => (
+            <span key={i} className="tag" style={{ background: data.color + "11", color: data.color, border: `1px solid ${data.color}33` }}>{t}</span>
+          ))}
         </div>
-      )}
+
+        <p style={{ fontSize: 10, color: "#9ca3af", lineHeight: 1.7 }}>{data.shortDesc}</p>
+
+        {/* Collapsed hint */}
+        {!isSelected && (
+          <div style={{ fontSize: 8, color: "#374151", marginTop: 10, textAlign: "right", letterSpacing: 1 }}>
+            TAP TO EXPAND FULL DOCTRINAL PROFILE ▽
+          </div>
+        )}
+
+        {/* Expanded content */}
+        {isSelected && (
+          <div className="fade-in" style={{ marginTop: 16, paddingTop: 14, borderTop: "1px dashed #1f2937" }}>
+
+            {/* Context */}
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ fontSize: 8, color: data.color, letterSpacing: 2, fontWeight: "bold", marginBottom: 6 }}>HISTORICAL CONTEXT</div>
+              <p style={{ fontSize: 10, color: "#9ca3af", lineHeight: 1.8 }}>{data.context}</p>
+            </div>
+
+            {/* Forces */}
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ fontSize: 8, color: data.color, letterSpacing: 2, fontWeight: "bold", marginBottom: 6 }}>OPERATIONAL FORCES</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                {data.forces.map((f, i) => (
+                  <div key={i} style={{ fontSize: 9, color: "#e2e8f0", background: "#111827", border: "1px solid #1f2937", padding: "3px 8px", borderRadius: 2, lineHeight: 1.5 }}>{f}</div>
+                ))}
+              </div>
+            </div>
+
+            {/* Tactics */}
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ fontSize: 8, color: data.color, letterSpacing: 2, fontWeight: "bold", marginBottom: 6 }}>DOCTRINE & TACTICS</div>
+              <p style={{ fontSize: 10, color: "#9ca3af", lineHeight: 1.8 }}>{data.tactics}</p>
+            </div>
+
+            {/* Weapons */}
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ fontSize: 8, color: data.color, letterSpacing: 2, fontWeight: "bold", marginBottom: 6 }}>WEAPONRY & TECHNOLOGY</div>
+              <p style={{ fontSize: 10, color: "#9ca3af", lineHeight: 1.8 }}>{data.weapons}</p>
+            </div>
+
+            {/* What this conflict added */}
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ fontSize: 8, color: data.color, letterSpacing: 2, fontWeight: "bold", marginBottom: 8 }}>STRUCTURAL CONTRIBUTIONS TO MODERN SANDF</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {(data.structuralAdditions || []).map((item, i) => (
+                  <StructuralCard key={i} item={item} />
+                ))}
+              </div>
+            </div>
+
+            {/* Doctrinal impact scores */}
+            {data.doctrinalScore && (
+              <div style={{ marginBottom: 14, padding: "12px 14px", background: "#080810", border: "1px solid #1f2937", borderRadius: 2 }}>
+                <div style={{ fontSize: 8, color: "#374151", letterSpacing: 2, fontWeight: "bold", marginBottom: 10 }}>DOCTRINAL IMPACT SCORE</div>
+                {DOC_AREAS.map(area => (
+                  <DoctrineBar key={area} area={area} score={data.doctrinalScore[area] || 0} color={DOC_COLORS[area]} />
+                ))}
+              </div>
+            )}
+
+            {/* Legacy */}
+            <div style={{ padding: "12px 14px", background: data.color + "0a", border: `1px solid ${data.color}22`, borderRadius: 2 }}>
+              <div style={{ fontSize: 8, color: data.color, letterSpacing: 2, fontWeight: "bold", marginBottom: 6 }}>EVOLUTIONARY IMPACT TO TODAY'S STRUCTURE</div>
+              <p style={{ fontSize: 10, color: "#e2e8f0", lineHeight: 1.8 }}>{data.legacy}</p>
+            </div>
+
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
 function App() {
-  const [selectedIdx, setSelectedIdx] = useState(0);
+  const [selectedIdx, setSelectedIdx] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [filterTag, setFilterTag] = useState(null);
 
-  const filteredData = TIMELINE_DATA.filter(item => 
-    item.era.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.legacy.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const allTags = [...new Set(TIMELINE_DATA.flatMap(d => d.tags || []))];
+
+  const filteredData = TIMELINE_DATA.filter(item => {
+    const q = searchQuery.toLowerCase();
+    const matchesSearch = !q || item.era.toLowerCase().includes(q) || item.title.toLowerCase().includes(q) || item.context.toLowerCase().includes(q) || (item.tags||[]).some(t=>t.toLowerCase().includes(q));
+    const matchesTag = !filterTag || (item.tags||[]).includes(filterTag);
+    return matchesSearch && matchesTag;
+  });
+
+  const totalEras = TIMELINE_DATA.length;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#060609", color: "#e2e8f0", padding: "16px" }}>
-      
-      {/* Header Matrix */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "20px", borderBottom: "1px solid #1f2937", paddingBottom: "14px" }}>
-        <div>
-          <div style={{ fontSize: "9px", letterSpacing: "3px", color: "#fb923c" }}>SANDF · MILITARY EVOLUTION</div>
-          <div style={{ fontSize: "18px", fontWeight: "900", letterSpacing: "3px", color: "#fff" }}>HISTORICAL CHRONOLOGY</div>
-          <div style={{ fontSize: "9px", color: "#6b7280", marginTop: "4px", lineHeight: "1.4" }}>
-            Vertical lineage mapping the structural developments, tactical innovations, and weapon profiles that formed current defensive doctrines.
-          </div>
+    <div style={{ minHeight: "100vh", background: "#060609", color: "#e2e8f0", padding: "16px", maxWidth: 800, margin: "0 auto" }}>
+
+      {/* Header */}
+      <div style={{ borderBottom: "1px solid #1a1a2e", paddingBottom: 16, marginBottom: 18 }}>
+        <div style={{ fontSize: 8, letterSpacing: 4, color: "#fb923c", marginBottom: 4 }}>SANDF · MILITARY EVOLUTION · CHRONOLOGICAL ANALYSIS</div>
+        <div style={{ fontSize: 20, fontWeight: 900, letterSpacing: 3, color: "#fff", lineHeight: 1.1 }}>HISTORICAL CHRONOLOGY</div>
+        <div style={{ fontSize: 9, color: "#374151", marginTop: 6, lineHeight: 1.7 }}>
+          Vertical lineage mapping {totalEras} eras of structural development, tactical innovation, and weapon systems that formed current SANDF defensive doctrine. Each era documents what it specifically contributed to today's military structure.
+        </div>
+        <div style={{ display: "flex", gap: 16, marginTop: 10, flexWrap: "wrap" }}>
+          {[
+            { label: "ERAS DOCUMENTED", val: totalEras },
+            { label: "CENTURIES COVERED", val: "3.5" },
+            { label: "STRUCTURAL CONTRIBUTIONS", val: TIMELINE_DATA.reduce((a,d)=>a+(d.structuralAdditions||[]).length,0) },
+          ].map((s,i) => (
+            <div key={i} style={{ textAlign: "center" }}>
+              <div style={{ fontSize: 18, fontWeight: 900, color: "#fb923c" }}>{s.val}</div>
+              <div style={{ fontSize: 7, color: "#374151", letterSpacing: 1 }}>{s.label}</div>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Strategic Information Panel */}
-      <div style={{ background: "#0f0f1a", border: "1px solid #1f2937", padding: "10px 14px", fontSize: "9px", color: "#9ca3af", marginBottom: "16px", letterSpacing: "1px", lineHeight: "1.6" }}>
-        <span style={{ color: "#fb923c", fontWeight: "bold" }}>DOCTRINAL FACTOR:</span> Modern SANDF small-unit autonomy is not purely European. It is an evolutionary synthesis of decentralized Boer Commando structures, hyper-aggressive Zulu encirclement vectors, and arduous counter-insurgency lessons learned during the mid-20th-century bush campaigns.
+      {/* Doctrinal Factor Panel */}
+      <div style={{ background: "#0c0c14", border: "1px solid #1a1a2e", borderLeft: "3px solid #fb923c", padding: "10px 14px", fontSize: 9, color: "#9ca3af", marginBottom: 16, letterSpacing: 1, lineHeight: 1.8 }}>
+        <span style={{ color: "#fb923c", fontWeight: "bold" }}>DOCTRINAL SYNTHESIS:</span> Modern SANDF small-unit autonomy is not purely European. It is an evolutionary synthesis of decentralized Boer Commando structures, hyper-aggressive Zulu encirclement vectors, colonial-era self-sufficiency imperatives, and the arduous counter-insurgency lessons of the mid-20th-century bush campaigns. Each era below documents precisely what it contributed to the structure you see today.
       </div>
 
-      {/* Search Filter Node */}
-      <div style={{ marginBottom: "16px" }}>
-        <input 
-          type="text" 
-          placeholder="FILTER BY ERA, TACTIC, OR WEAPON SYSTEM..." 
+      {/* Search */}
+      <div style={{ marginBottom: 10 }}>
+        <input
+          type="text"
+          placeholder="FILTER BY ERA, TACTIC, WEAPON, OR KEYWORD..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={e => { setSearchQuery(e.target.value); setSelectedIdx(null); }}
           style={{
-            width: "100%",
-            background: "#0a0a0f",
-            border: "1px solid #374151",
-            color: "#fff",
-            padding: "10px",
-            fontSize: "10px",
-            fontFamily: "'Courier New', monospace",
-            letterSpacing: "1px",
-            borderRadius: "2px"
+            width: "100%", background: "#0a0a0f", border: "1px solid #1f2937",
+            color: "#fff", padding: "10px 12px", fontSize: 10,
+            fontFamily: "'Courier New', monospace", letterSpacing: 1, borderRadius: 2
           }}
         />
       </div>
 
-      {/* Vertical Chronological Stack */}
-      <div style={{ position: "relative", paddingLeft: "4px" }}>
+      {/* Tag filters */}
+      <div style={{ marginBottom: 18, display: "flex", flexWrap: "wrap", gap: 4 }}>
+        <button
+          onClick={() => setFilterTag(null)}
+          style={{
+            background: !filterTag ? "#374151" : "transparent",
+            color: !filterTag ? "#fff" : "#374151",
+            border: "1px solid #374151", fontSize: 8, padding: "3px 8px",
+            cursor: "pointer", letterSpacing: 1, borderRadius: 2, fontFamily: "'Courier New', monospace"
+          }}
+        >ALL</button>
+        {allTags.map((tag, i) => (
+          <button
+            key={i}
+            onClick={() => setFilterTag(filterTag === tag ? null : tag)}
+            style={{
+              background: filterTag === tag ? "#1f2937" : "transparent",
+              color: filterTag === tag ? "#e2e8f0" : "#4b5563",
+              border: `1px solid ${filterTag === tag ? "#374151" : "#1f2937"}`,
+              fontSize: 8, padding: "3px 8px", cursor: "pointer", letterSpacing: 1,
+              borderRadius: 2, fontFamily: "'Courier New', monospace"
+            }}
+          >{tag}</button>
+        ))}
+      </div>
+
+      {/* Doctrinal Score Legend */}
+      <div style={{ background: "#080810", border: "1px solid #1a1a2e", padding: "8px 12px", marginBottom: 16, borderRadius: 2 }}>
+        <div style={{ fontSize: 7, color: "#374151", letterSpacing: 2, marginBottom: 6 }}>DOCTRINAL IMPACT SCORE LEGEND</div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+          {DOC_AREAS.map(area => (
+            <div key={area} style={{ display: "flex", alignItems: "center", gap: 5 }}>
+              <div style={{ width: 8, height: 8, borderRadius: 1, background: DOC_COLORS[area] }} />
+              <span style={{ fontSize: 8, color: "#6b7280", letterSpacing: 1 }}>{DOC_LABELS[area]}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Timeline */}
+      <div style={{ position: "relative" }}>
+        <div className="timeline-line" />
         {filteredData.length > 0 ? (
           filteredData.map((eraData, idx) => (
-            <TimelineCard 
+            <TimelineCard
               key={idx}
               data={eraData}
+              index={idx}
               isSelected={selectedIdx === idx}
               onSelect={() => setSelectedIdx(selectedIdx === idx ? null : idx)}
             />
           ))
         ) : (
-          <div style={{ fontSize: "10px", color: "#4b5563", textAlign: "center", padding: "20px" }}>
-            NO MILITARY RECORDS MATCHING QUERY KEYWORD.
+          <div style={{ fontSize: 10, color: "#374151", textAlign: "center", padding: "30px", letterSpacing: 2 }}>
+            NO MILITARY RECORDS MATCHING QUERY PARAMETERS.
           </div>
         )}
       </div>
 
-      {/* Navigation Return Node */}
-      <div>
+      {/* Synthesis Panel */}
+      <div style={{ marginTop: 24, padding: "16px", background: "#0c0c14", border: "1px solid #1a1a2e", borderTop: "2px solid #fb923c", borderRadius: 2 }}>
+        <div style={{ fontSize: 9, letterSpacing: 3, color: "#fb923c", marginBottom: 10, fontWeight: "bold" }}>STRUCTURAL LINEAGE SUMMARY</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          {[
+            { src: "Khoikhoi-Dutch Wars (1659+)", contrib: "Commando system, tracker auxiliaries, elected leadership" },
+            { src: "Zulu Military Revolution (1816)", contrib: "Regimental identity, standardized equipment, reserve doctrine" },
+            { src: "Anglo-Boer Wars (1880-1902)", contrib: "Mission command, marksmanship culture, camouflage" },
+            { src: "Union Defence Forces (1912-1945)", contrib: "Rank table, G1-G4 staff system, corps branches" },
+            { src: "Operation Savannah (1975-76)", contrib: "Combined arms planning, logistics reach, anti-armor doctrine" },
+            { src: "Border War (1966-1989)", contrib: "Battle group doctrine, fire team autonomy, COIN cell" },
+            { src: "1994 Integration", contrib: "Joint operations, democratic oversight, rights-based ROE" },
+          ].map((item, i) => (
+            <div key={i} style={{ background: "#080810", padding: "8px 10px", border: "1px solid #111827", borderRadius: 2 }}>
+              <div style={{ fontSize: 8, color: "#fb923c", letterSpacing: 1, marginBottom: 3, fontWeight: "bold" }}>{item.src}</div>
+              <div style={{ fontSize: 9, color: "#6b7280", lineHeight: 1.6 }}>{item.contrib}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Return nav */}
+      <div style={{ marginTop: 20 }}>
         <a href="index.html" className="giant-map-btn">
-          <span><i className="fa-solid fa-shield-halved" style={{ marginRight: "8px" }}></i> Return to Tactical Structure</span>
+          <span><i className="fa-solid fa-shield-halved" style={{ marginRight: 8 }}></i>Return to Tactical Structure</span>
           <i className="fa-solid fa-chevron-right"></i>
         </a>
       </div>
 
-      {/* Footer System Ledger */}
-      <div style={{ textAlign: "center", marginTop: "24px", color: "#1f2937", fontSize: "8px", letterSpacing: "2px" }}>
-        SANDF EVOLUTIONARY CHRONOLOGY · ENGINE MODE: REACT · EDUCATIONAL REFERENCE ONLY
+      <div style={{ textAlign: "center", marginTop: 16, color: "#111827", fontSize: 7, letterSpacing: 2 }}>
+        SANDF EVOLUTIONARY CHRONOLOGY · REACT · EDUCATIONAL REFERENCE ONLY
       </div>
-
     </div>
   );
 }
