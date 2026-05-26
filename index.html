@@ -1,360 +1,619 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SANDF National Command Dashboard</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    
-    <style>
-        /* System-wide Design Tokens & Color Palette */
-        :root {
-            --bg-primary: #0b0f19;
-            --bg-secondary: #111827;
-            --bg-card: #1f2937;
-            --border-color: #374151;
-            --text-main: #f3f4f6;
-            --text-muted: #9ca3af;
-            
-            /* Strategic Branch Color Keys */
-            --color-hq: #3b82f6;       /* Blue */
-            --color-infantry: #10b981; /* Green */
-            --color-sf: #ef4444;       /* Red */
-            --color-airforce: #06b6d4; /* Cyan */
-            --color-navy: #f59e0b;     /* Amber */
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SANDF Tactical Structure</title>
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#060609;color:#e2e8f0;font-family:'Courier New',monospace}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#111}::-webkit-scrollbar-thumb{background:#333}
+.slide-up{animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.fade-in{animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+button{font-family:'Courier New',monospace}
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-primary);
-            color: var(--text-main);
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* Sliding Navigation Drawer Structure */
-        .drawer {
-            width: 320px;
-            background-color: var(--bg-secondary);
-            border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            transition: transform 0.3s ease;
-            z-index: 100;
-        }
-
-        .drawer-header {
-            padding: 24px 20px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .drawer-header i {
-            color: var(--color-hq);
-            font-size: 1.4rem;
-        }
-
-        .drawer-header h1 {
-            font-size: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 700;
-        }
-
-        /* Navigation List inside Drawer */
-        .drawer-menu {
-            list-style: none;
-            padding: 20px 12px;
-            flex-grow: 1;
-            overflow-y: auto;
-        }
-
-        .drawer-item a {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 14px 16px;
-            color: var(--text-muted);
-            text-decoration: none;
-            font-size: 0.95rem;
-            font-weight: 500;
-            border-radius: 6px;
-            margin-bottom: 6px;
-            transition: all 0.2s ease;
-        }
-
-        .drawer-item a:hover, 
-        .drawer-item.active a {
-            color: #ffffff;
-            background-color: var(--bg-card);
-        }
-
-        /* Individualized Icon Color Tracking */
-        .drawer-item[data-branch="hq"] i { color: var(--color-hq); }
-        .drawer-item[data-branch="infantry"] i { color: var(--color-infantry); }
-        .drawer-item[data-branch="specialforces"] i { color: var(--color-sf); }
-        .drawer-item[data-branch="airforce"] i { color: var(--color-airforce); }
-        .drawer-item[data-branch="marines"] i { color: var(--color-navy); }
-
-        /* Drawer Footer Action Block containing the Giant Map Button */
-        .drawer-footer-actions {
-            padding: 20px;
-            border-top: 1px solid var(--border-color);
-            background-color: var(--bg-secondary);
-            margin-top: auto;
-        }
-
-        .giant-map-btn {
-            position: relative;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            width: 100%;
-            padding: 16px 20px;
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            border: 2px solid var(--color-hq);
-            border-radius: 8px;
-            color: #ffffff;
-            text-decoration: none;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 0.85rem;
-            overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.15);
-        }
-
-        .giant-map-btn i.fa-map-location-dot {
-            font-size: 1.3rem;
-            color: var(--color-hq);
-            transition: transform 0.3s ease;
-        }
-
-        .giant-map-btn span {
-            flex-grow: 1;
-        }
-
-        .tactical-arrow {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            transition: transform 0.3s ease;
-        }
-
-        /* Hover States & Tactical Glow Effects */
-        .giant-map-btn:hover {
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-            border-color: #60a5fa;
-            box-shadow: 0 0 25px rgba(59, 130, 246, 0.45);
-            transform: translateY(-2px);
-        }
-
-        .giant-map-btn:hover i.fa-map-location-dot {
-            color: #ffffff;
-            transform: scale(1.15) rotate(-5deg);
-        }
-
-        .giant-map-btn:hover .tactical-arrow {
-            color: #ffffff;
-            transform: translateX(4px);
-        }
-
-        /* Main Workspace Panel */
-        .main-content {
-            flex-grow: 1;
-            padding: 40px;
-            overflow-y: auto;
-            position: relative;
-        }
-
-        /* Reactive Intelligence Section Layout */
-        .intel-section {
-            display: none;
-        }
-
-        .intel-section.active-pane {
-            display: block;
-            animation: fadeIn 0.4s ease;
-        }
-
-        .intel-header {
-            margin-bottom: 30px;
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 15px;
-        }
-
-        .intel-header h2 {
-            font-size: 1.8rem;
-            margin-bottom: 6px;
-        }
-
-        .intel-header p {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-        }
-
-        /* Grid Data Cards */
-        .status-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .status-card {
-            background-color: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 24px;
-        }
-
-        .status-card h3 {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 12px;
-        }
-
-        .status-value {
-            font-size: 1.8rem;
-            font-weight: 700;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
+/* High visibility tactical glow styling for map interface route link */
+.giant-map-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: calc(100% - 24px);
+  margin: 16px 12px 24px 12px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #0d1527 0%, #070a12 100%);
+  border: 1px solid #3b82f6;
+  border-radius: 2px;
+  color: #ffffff;
+  text-decoration: none;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+}
+.giant-map-btn:hover {
+  background: #3b82f6;
+  color: #060609;
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+}
+.giant-map-btn i {
+  font-size: 13px;
+}
+</style>
 </head>
 <body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useCallback} = React;
 
-    <div class="drawer">
-        <div class="drawer-header">
-            <i class="fa-solid fa-shield-halved"></i>
-            <h1>C2 Command Console</h1>
-        </div>
+const SD = {
+  "Team Leader":{icon:"🎯",rank:"Lance Corporal",color:"#f59e0b",weapon:"R4 Assault Rifle (5.56mm)",
+    equipment:["R4 Assault Rifle + 6 magazines (30rds each)","Z88 9mm Pistol (secondary)","Personal VHF radio","Binoculars","Map + compass + protractor","PASGT body armour + helmet","Combat webbing","2x fragmentation grenades","Smoke grenade","Personal first aid kit (IFAK)","72hr ration pack"],
+    responsibilities:["Leads 3 soldiers in all conditions","Draws and accounts for team ammo before every op","Inspects weapons before and after every patrol","Reports weapon defects to Section Commander","Responsible for fire team discipline and readiness"],
+    owns:"Accountable for all weapons and equipment in the fire team — if a weapon goes missing, it traces back here first."},
+  "Rifleman":{icon:"🪖",rank:"Private",color:"#4ade80",weapon:"R4 Assault Rifle + Bayonet",
+    equipment:["R4 Assault Rifle (5.56mm)","Bayonet (R4 compatible)","4-6 magazines (30rds each)","2x fragmentation grenades","PASGT body armour + helmet","Combat webbing + chest rig","72hr ration pack","Personal first aid kit","Entrenching tool","Water bottles (2L)"],
+    responsibilities:["Execute Team Leader's orders","Maintain personal weapon in serviceable condition","Daily weapon cleaning after every field exercise","Carry and distribute ammunition as directed","Provide covering fire during team movement"],
+    owns:"Responsible for personal weapon and kit — must clean before every handback to armoury."},
+  "Grenadier":{icon:"💥",rank:"Private",color:"#4ade80",weapon:"R4 + M203 40mm Grenade Launcher",
+    equipment:["R4 Assault Rifle with M203 underbarrel launcher","4 magazines (30rds, 5.56mm)","8-12x 40mm grenades (HE, smoke, illumination, buckshot)","Dedicated 40mm grenade vest/pouch","PASGT body armour + helmet","Combat webbing","72hr ration pack","Personal first aid kit"],
+    responsibilities:["Provide indirect fire support at section level","Engage targets beyond direct rifle range","Deploy smoke for cover during movement","Account for every 40mm round — logged by Team Leader","Responsible for M203 cleaning and maintenance"],
+    owns:"Maintains M203 launcher — each grenade round is individually serialised and logged. Missing rounds require a written explanation."},
+  "LMG Gunner":{icon:"🔫",rank:"Private",color:"#4ade80",weapon:"Vektor SS-77 7.62mm LMG",
+    equipment:["Vektor SS-77 LMG (7.62x51mm NATO)","800-1000 rounds (belted, in ammo box) — roughly 12kg","Spare barrel (mandatory — swaps every 200rds)","Z88 9mm Pistol (secondary)","Bipod (mounted on SS-77)","PASGT body armour + helmet","Assistant gunner carries extra 400rds"],
+    responsibilities:["Provide sustained suppressive fire","Manage barrel changes to prevent overheating","Account for all belt ammunition — counted before and after every op","Maintain SS-77 in full working order","Coordinate with assistant gunner on ammo carrying"],
+    owns:"Responsible for the SS-77 — the most expensive weapon in the fire team. Any damage must be reported and documented immediately."},
+  "Section Commander":{icon:"⭐",rank:"Sergeant",color:"#22d3ee",weapon:"R4 Assault Rifle",
+    equipment:["R4 Assault Rifle + 5 magazines","Z88 9mm Pistol","VHF tactical radio (Thales or PRC-77)","Binoculars + compass","Section orders map board","PASGT body armour + helmet","2x smoke grenades","Night vision monocular (where available)","Personal first aid kit"],
+    responsibilities:["Commands 8-10 soldiers across 2 fire teams","Responsible for ALL weapons in the section — inspect before and after every op","Conducts daily weapon state checks","Signs for section ammunition draw from Platoon Sergeant","Reports weapon defects to Platoon Sergeant immediately","Conducts cleaning parades after every live fire exercise"],
+    owns:"Accountable for all 8-10 weapons in the section. If a weapon is lost or damaged without explanation, it is the Section Commander's liability."},
+  "Platoon Commander":{icon:"🎖️",rank:"Lieutenant",color:"#818cf8",weapon:"Z88 9mm Pistol",
+    equipment:["Z88 9mm Pistol","VHF/UHF tactical radio","GPS (Garmin military grade)","Topographic maps + protractor","Binoculars + laser rangefinder","PASGT body armour + helmet","Orders board + notebook","Red/blue lens torch"],
+    responsibilities:["Commands 30-35 soldiers across 3 sections","Responsible for tactical planning and execution","Briefs orders to Section Commanders","Maintains communication with Company HQ at all times","Signs for all platoon equipment and vehicles","Conducts officer's call before every operation"],
+    owns:"Signs for all platoon weapons, vehicles, radios, and equipment. Financially liable for losses."},
+  "Platoon Sergeant":{icon:"🛡️",rank:"Staff Sergeant",color:"#f59e0b",weapon:"R4 Assault Rifle",
+    equipment:["R4 Assault Rifle + 5 magazines","VHF radio","Ammunition accounting ledger","Spare parts kit (cleaning tools, springs, pins)","Vehicle keys + log books","Admin pack (medical docs, nominal roll)","PASGT body armour + helmet"],
+    responsibilities:["Runs platoon logistics — ammo, rations, water, fuel","Manages casevac (casualty evacuation) during contact","Conducts ammunition handback and reconciliation after every op","Responsible for maintaining platoon vehicle(s)","Manages platoon roll call and admin","The backbone of the platoon — keeps everything running"],
+    owns:"Manages the platoon ammunition store. Every round out must be accounted for on return. Unexplained missing ammunition is a serious offence."},
+  "Signaller":{icon:"📡",rank:"Lance Corporal",color:"#22d3ee",weapon:"R4 + PRC-77 Radio",
+    equipment:["R4 Assault Rifle + 4 magazines","PRC-77 or Thales PR4G VHF radio","2x spare battery packs","Antenna kit (whip + directional)","Encryption fill device (COMSEC)","Radio log book","PASGT body armour + helmet"],
+    responsibilities:["Maintains comms between platoon and company HQ","Manages radio batteries — charged before every op","Logs all radio traffic in the comms log book","Responsible for COMSEC (communications security)","If radio fails during an op — immediately notify Plt Comd"],
+    owns:"Responsible for all communications equipment. Loss or damage of encryption devices is a major security incident requiring immediate reporting."},
+  "Medic":{icon:"⚕️",rank:"Private / L/Cpl",color:"#4ade80",weapon:"R4 Assault Rifle",
+    equipment:["R4 + 4 magazines","Trauma medical bergen (10-15kg)","Tourniquets (CAT x4)","Chest seals (occlusive)","IV fluid bags (Lactated Ringer / NaCl)","Morphine ampoules (controlled — logged by serial number)","Field dressings + haemostatic gauze","Airway kit (NPA, BVM)","Hypothermia blanket","Casualty card + log"],
+    responsibilities:["Provides immediate trauma care under fire","Manages controlled substances (morphine) — strict accountability","Logs every medical intervention on casualty cards","Conducts daily medical kit inventory — reports shortages to Plt Sgt","Briefs platoon on self-aid and buddy-aid before every op"],
+    owns:"Responsible for all controlled substances. Every morphine ampoule is logged by serial number. A missing ampoule triggers an immediate Board of Inquiry — not just a disciplinary matter."},
+  "Runner / Batman":{icon:"🪖",rank:"Private",color:"#6b7280",weapon:"R4 Assault Rifle",
+    equipment:["R4 + 4 magazines","PASGT body armour + helmet","Message pouch (waterproof)","Spare radio batteries","72hr ration pack"],
+    responsibilities:["Physically carries messages between platoons when radios fail","Assists Platoon Commander with admin tasks","Provides additional security for Plt Comd in the field","Carries additional ammunition and equipment as directed"],
+    owns:"Responsible for message security — written messages must never fall into wrong hands."},
+  "Company Commander":{icon:"🦅",rank:"Major / Captain",color:"#f472b6",weapon:"Z88 9mm Pistol",
+    equipment:["Z88 9mm Pistol","Encrypted UHF/VHF radio","GPS + digital mapping tablet","Binoculars","Vehicle (Land Rover Defender or RG-31 Nyala)","Body armour + helmet","Orders board","Situational awareness display (where available)"],
+    responsibilities:["Commands 100-120 soldiers across 3 platoons","Signs for ALL company weapons, vehicles, and equipment","Responsible for operational planning at company level","Authorises all ammunition issues and returns","Conducts O Groups (Orders Groups) before every operation"],
+    owns:"Signs for every weapon, vehicle, radio, and piece of equipment in the company. Financially liable for losses. Equipment scale worth tens of millions of Rands."},
+  "Company 2IC":{icon:"🎖️",rank:"Captain",color:"#f472b6",weapon:"Z88 9mm Pistol",
+    equipment:["Z88 9mm Pistol","UHF/VHF radio","Admin pack + nominal roll","Vehicle log books","Equipment ledgers","Body armour + helmet"],
+    responsibilities:["Assists Company Commander and takes command in their absence","Manages company administration and logistics","Coordinates company resupply operations","Manages discipline cases and admin processes"],
+    owns:"Acts as company quartermaster — manages the equipment store and admin records."},
+  "CSM":{icon:"🔰",rank:"Warrant Officer",color:"#f59e0b",weapon:"R4 Assault Rifle",
+    equipment:["R4 + 5 magazines","Z88 9mm","Company store keys","Equipment registers","VHF radio","Body armour + helmet"],
+    responsibilities:["Senior NCO in the company — enforces discipline and standards","Manages the company equipment store","Conducts daily equipment checks and inspections","If something goes missing in the company — the CSM answers first","Responsible for all non-weapon equipment: vehicles, optics, radios, body armour"],
+    owns:"The CSM holds keys to the company store. Every item in and out is signed for personally. If it's not in the store, the CSM knows who has it."},
+  "Mortar Section":{icon:"💣",rank:"Det Comd: Sgt",color:"#fb923c",weapon:"60mm / 81mm Mortar",
+    equipment:["81mm L16 Mortar (baseplate + bipod + sight)","48x bombs (HE, smoke, illumination)","Aiming posts x2","R4 + 3 mags (personal)","Body armour + helmet","SAMIL vehicle for mobility"],
+    responsibilities:["Provides indirect fire support to company","Fires on request from Company Commander or Platoon Commanders","Maintains mortar in serviceable condition","Accounts for all bomb rounds issued — each round is serialised"],
+    owns:"Det Comd signs for all mortar equipment and every round in the ammo scale."},
+  "HMG Section":{icon:"🔫",rank:"Det Comd: Sgt",color:"#fb923c",weapon:"Browning M2 .50 cal HMG",
+    equipment:["Browning M2HB .50 cal HMG","1000+ rounds (.50 BMG belted)","Vehicle mounting (Land Rover / Mamba APC)","Spare barrels x2 (mandatory)","R4 + 3 mags (personal)","Body armour + helmet"],
+    responsibilities:["Provides heavy suppressive fire at company level","Vehicle-mounted for tactical mobility","Responsible for .50 cal maintenance and barrel change drills","Barrel must be changed every 200 rounds — failure to do so damages the weapon"],
+    owns:"HMG is a company asset — signed for by CSM, issued to Det Comd on operations."},
+  "Signals Det":{icon:"📡",rank:"Corporal",color:"#22d3ee",weapon:"R4 + Radio",
+    equipment:["HF/VHF radio set","Encrypted comms devices","Spare batteries x4","Antenna kit (various)","R4 + 3 mags","Body armour + helmet"],
+    responsibilities:["Maintains comms between company and battalion HQ","Manages company radio nets across all platoons","Responsible for COMSEC at company level","Logs all signal traffic"],
+    owns:"Responsible for encrypted comms devices — loss triggers an immediate security incident investigation."},
+  "Admin / Log":{icon:"🚛",rank:"Corporal",color:"#6b7280",weapon:"R4 + Vehicles",
+    equipment:["SAMIL 20 / Land Rover Defender","Fuel jerricans (daily fuel scale)","7-day ration packs (company scale)","Spare parts kit","Medical resupply kit","R4 + 3 mags","Body armour + helmet"],
+    responsibilities:["Manages company ration and water resupply","Vehicle maintenance and fuel accountability (every litre logged)","Casualty evacuation vehicle (casevac)","Delivers ammunition resupply forward during operations"],
+    owns:"Vehicle log books must be maintained — every kilometre driven and every litre of fuel is logged. Discrepancies are investigated."},
+  "Commanding Officer":{icon:"⚜️",rank:"Lieutenant Colonel",color:"#fb923c",weapon:"Z88 9mm Pistol",
+    equipment:["Z88 9mm Pistol","Secure HF/VHF radio","Command vehicle (Ratel IFV or Mamba APC)","Digital C2 system","GPS + mapping","Body armour + helmet","Satellite phone (operational deployments)"],
+    responsibilities:["Commands 600-800 soldiers across 3-4 companies","Responsible for the entire battalion's operational effectiveness","Signs for battalion-level equipment — valued at hundreds of millions of Rands","Authorises all operational deployments within the battalion","Reports directly to Brigade Commander"],
+    owns:"Accountable for the entire battalion's equipment, weapons, vehicles, and personnel. Annual G4 inspection verifies every item on the equipment scale."},
+  "Battalion 2IC":{icon:"🦅",rank:"Major",color:"#fb923c",weapon:"Z88 9mm Pistol",
+    equipment:["Z88 9mm Pistol","HF/VHF radio","Admin and logistics pack","Vehicle","Body armour + helmet"],
+    responsibilities:["Takes command of battalion in CO's absence","Manages battalion administration and logistics","Coordinates inter-company operations","Responsible for battalion training programme"],
+    owns:"Manages battalion administrative systems and personnel records."},
+  "RSM":{icon:"👑",rank:"Warrant Officer Class 1",color:"#f59e0b",weapon:"R4 Assault Rifle",
+    equipment:["R4 + 5 magazines","Z88 9mm","Battalion pace stick (ceremonial)","VHF radio","Body armour + helmet"],
+    responsibilities:["Most senior NCO in the entire battalion — 600-800 soldiers","Responsible for discipline and military standards battalion-wide","Manages the Regimental Guard and ceremonial functions","The CO's eyes and ears on standards and morale","If discipline breaks down anywhere — the RSM answers first"],
+    owns:"Responsible for maintaining standards and discipline throughout the battalion. The RSM's word on discipline is final below officer level."},
+  "Intelligence Officer":{icon:"🔍",rank:"Captain",color:"#a78bfa",weapon:"Z88 9mm Pistol",
+    equipment:["Z88 9mm Pistol","Encrypted laptop/tablet","Intelligence maps + overlays","Binoculars + spotting scope","Long-range camera","Secure radio","Body armour + helmet"],
+    responsibilities:["Briefs the CO on enemy dispositions, threats, and terrain before every operation","Manages human intelligence (HUMINT) sources","Analyses imagery and signals intelligence","Maintains the battalion intelligence picture (IPB)","Responsible for OPSEC — operational security across the battalion"],
+    owns:"Manages classified intelligence materials — all classified documents are strictly accounted for. Loss of classified material is a criminal offence."},
+  "Signals Officer":{icon:"📡",rank:"Lieutenant",color:"#22d3ee",weapon:"Z88 9mm Pistol",
+    equipment:["Z88 9mm Pistol","HF/VHF radio suite (battalion net)","Encryption devices","Antenna systems","Radio log books","Body armour + helmet"],
+    responsibilities:["Manages all communications across the battalion","Ensures comms between all companies and battalion HQ","Manages the COMSEC programme for the entire battalion","Responsible for all radio and encrypted comms equipment"],
+    owns:"Accountable for all encrypted communications equipment in the battalion. Any loss is an immediate security incident."},
+  "Recce Platoon":{icon:"🔭",rank:"Pl Comd: Lt",color:"#ef4444",weapon:"R4 + Sniper Rifles",
+    equipment:["R4 (suppressed where available)","NTW-20 20mm Anti-Material Rifle","R4S sniper configuration","Binoculars + spotting scope","Night vision (NODs)","Ghillie suit","GPS + compass","Lightweight 96hr ration pack"],
+    responsibilities:["Conducts long-range reconnaissance 72-96hrs ahead of main force","Provides intelligence on enemy dispositions for battalion CO","Sniper pairs provide overwatch for battalion operations","Operates in small 2-4 man teams behind enemy lines"],
+    owns:"Highly specialist equipment — NTW-20 and night vision devices are signed for individually by each operator. Loss of NVDs is a serious matter."},
+  "Mortar Platoon":{icon:"💣",rank:"Pl Comd: Lt",color:"#f59e0b",weapon:"81mm / 120mm Mortar",
+    equipment:["120mm Brandt mortar (battalion-level fire support)","81mm L16 mortar (section-level)","Fire control equipment + aiming circles","Radio + encrypted comms","SAMIL 50 mortar carrier vehicle"],
+    responsibilities:["Provides indirect fire support across the battalion battle space","Fires HE, smoke, and illumination rounds on call","Plt Comd coordinates with CO and company commanders for fire missions","Responsible for all mortar barrel, baseplate, and ammunition accountability"],
+    owns:"Mortar Pl Comd signs for all mortar systems and every round in the battalion ammunition scale."},
+  "Anti-Tank Platoon":{icon:"🚀",rank:"Pl Comd: Lt",color:"#a78bfa",weapon:"RPG-7 / ZT-35 Ingwe ATGM",
+    equipment:["RPG-7 rocket launcher (crew-served)","ZT-35 Ingwe ATGM (Anti-Tank Guided Missile)","HEAT warheads + warhead pouches","Night sight (RPG-7N)","R4 personal weapon","Vehicle (Land Rover or Ratel IFV)"],
+    responsibilities:["Destroys enemy armour at battalion level","Deployed forward to companies when armoured threat exists","Responsible for ATGM maintenance — highly sensitive and expensive equipment","Conducts anti-armour drills and rehearsals with companies"],
+    owns:"ATGM systems are signed for at battalion level — each unit is extremely high value. Damage or loss requires a formal Board of Inquiry."},
+};
 
-        <ul class="drawer-menu">
-            <li class="drawer-item" data-branch="hq"><a href="#hq"><i class="fa-solid fa-building-shield"></i> Joint Defence HQ</a></li>
-            <li class="drawer-item" data-branch="infantry"><a href="#infantry"><i class="fa-solid fa-person-military-to-person"></i> SA Army Infantry</a></li>
-            <li class="drawer-item" data-branch="specialforces"><a href="#specialforces"><i class="fa-solid fa-user-ninja"></i> Special Forces</a></li>
-            <li class="drawer-item" data-branch="airforce"><a href="#airforce"><i class="fa-solid fa-jet-fighter"></i> Air Force Ops</a></li>
-            <li class="drawer-item" data-branch="marines"><a href="#marines"><i class="fa-solid fa-ship"></i> Naval & Marine Fleet</a></li>
-        </ul>
+const UNITS = [
+  {cat:"SA Army — Infantry",color:"#4ade80",units:[
+    {n:"1 SA Infantry Battalion",loc:"Tempe, Free State",type:"BATTALION",size:"600–800 Soldiers",leader:"Lt Colonel",color:"#fb923c",r:"Light infantry framework, border safeguarding deployments (Op Corona)."},
+    {n:"2 SA Infantry Battalion",loc:"Wallmansthal, Gauteng",type:"BATTALION",size:"600–800 Soldiers",leader:"Lt Colonel",color:"#fb923c",r:"Mechanised infantry equipped with heavy armored Ratel IFVs."},
+    {n:"3 SA Infantry Battalion",loc:"Kimberley, N. Cape",type:"BATTALION",size:"600–800 Soldiers",leader:"Lt Colonel",color:"#fb923c",r:"Main basic training center & light infantry specialized for desert operations."},
+    {n:"4 SA Infantry Battalion",loc:"Middelburg, Mpumalanga",type:"BATTALION",size:"600–800 Soldiers",leader:"Lt Colonel",color:"#fb923c",r:"Motorised infantry backed by mobile Samil transport assets."},
+    {n:"5 SA Infantry Battalion",loc:"Doornkop, Gauteng",type:"BATTALION",size:"600–800 Soldiers",leader:"Lt Colonel",color:"#fb923c",r:"Specialized high-density urban terrain ops and homeland security defense."},
+    {n:"6 SA Infantry Battalion",loc:"Oudtshoorn, W. Cape",type:"BATTALION",size:"600–800 Soldiers",leader:"Lt Colonel",color:"#fb923c",r:"Light infantry framework specialized in mountainous warfare structures."},
+    {n:"7 SA Infantry Battalion",loc:"Phalaborwa, Limpopo",type:"BATTALION",size:"600–800 Soldiers",leader:"Lt Colonel",color:"#fb923c",r:"Thick bushveld tracking operations and active northern border patrols."},
+    {n:"8 SA Infantry Battalion",loc:"Upington, N. Cape",type:"BATTALION",size:"600–800 Soldiers",leader:"Lt Colonel",color:"#fb923c",r:"Mechanised desert infantry utilizing Ratel configurations."},
+    {n:"9 SA Infantry Battalion",loc:"Mtubatuba, KZN",type:"BATTALION",size:"600–800 Soldiers",leader:"Lt Colonel",color:"#fb923c",r:"Motorized units optimized for coastal thickets and littoral environments."},
+    {n:"21 SA Infantry Battalion",loc:"Grahamstown, E. Cape",type:"BATTALION (RESERVE)",size:"400-600 Contingent",leader:"Lt Colonel (Res)",color:"#fb923c",r:"Part-time reserve infantry framework structurally identical to active battalions."},
+    {n:"22 SA Infantry Battalion",loc:"Cape Town, W. Cape",type:"BATTALION (RESERVE)",size:"400-600 Contingent",leader:"Lt Colonel (Res)",color:"#fb923c",r:"Strategic part-time provincial structural infantry replenishment asset."},
+    {n:"23 SA Infantry Battalion",loc:"Durban, KZN",type:"BATTALION (RESERVE)",size:"400-600 Contingent",leader:"Lt Colonel (Res)",color:"#fb923c",r:"Regional part-time defensive asset supporting primary infantry structures."}
+  ]},
+  {cat:"SA Army — Armour",color:"#fb923c",units:[
+    {n:"Regiment Mooirivier",loc:"Potchefstroom, NW",type:"REGIMENT (BATTALION SCALE)",size:"~500 Heavy Crew",leader:"Lt Colonel / Armor Command",color:"#fb923c",r:"Primary heavy strike element operating Olifant Mk2 Main Battle Tanks."},
+    {n:"South African Irish Regiment",loc:"Cape Town",type:"REGIMENT (RESERVE Scale)",size:"~300 Armor Crew",leader:"Major / Lt Colonel (Res)",color:"#fb923c",r:"Reserve mechanized unit trained on armor mobilization strategies."},
+    {n:"Natal Mounted Rifles",loc:"Durban, KZN",type:"REGIMENT (RESERVE Scale)",size:"~300 Recon Crew",leader:"Major / Lt Colonel (Res)",color:"#fb923c",r:"Light armor formation focused on mobile vehicle-based reconnaissance."}
+  ]},
+  {cat:"SA Army — Artillery",color:"#ef4444",units:[
+    {n:"4 Artillery Regiment",loc:"Potchefstroom, NW",type:"REGIMENT (BATTALION SCALE)",size:"~600 Gunner Force",leader:"Lt Colonel / Fire Command",color:"#fb923c",r:"Heavy indirect fire core operating G5 towed & G6 self-propelled 155mm systems."},
+    {n:"14 Artillery Regiment",loc:"Tempe, Free State",type:"REGIMENT (RESERVE Scale)",size:"~300 Fire Crew",leader:"Major (Res)",color:"#fb923c",r:"Strategic backup fire teams coordinating modular field artillery scales."},
+    {n:"10 Anti-Aircraft Regiment",loc:"Tempe",type:"REGIMENT (BATTALION SCALE)",size:"~500 Shield Force",leader:"Lt Colonel / Air Def Command",color:"#fb923c",r:"Tactical air defense asset managing surface-to-air tracking networks."}
+  ]},
+  {cat:"SA Army — Special Forces",color:"#a78bfa",units:[
+    {n:"4 Special Forces Regiment",loc:"Langebaanweg, W. Cape",type:"RECIPIENT OPERATIONAL FORCE",size:"~150 operators (Compacted)",leader:"Colonel / Commander SF",color:"#f472b6",r:"Highly compact elite maritime specialists running covert recce and diving strikes."},
+    {n:"5 Special Forces Regiment",loc:"Phalaborwa, Limpopo",type:"RECIPIENT OPERATIONAL FORCE",size:"~200 operators (Compacted)",leader:"Colonel / Commander SF",color:"#f472b6",r:"Elite deep infiltration bushveld reconnaissance and unconventional direct action teams."},
+    {n:"45 Parachute Regiment",loc:"Tempe, Free State",type:"REGIMENT (BATTALION SCALE)",size:"~500 Airborne Force",leader:"Lt Colonel / Airborne Lead",color:"#fb923c",r:"Rapid airborne interception component trained for combat drop deployments."}
+  ]},
+  {cat:"SA Army — Engineers",color:"#22d3ee",units:[
+    {n:"1 Engineer Support Regiment",loc:"Tempe, Free State",type:"BATTALION STRUCT",size:"~500 Field Engineers",leader:"Lt Colonel",color:"#fb923c",r:"Combat infrastructure engineers managing tactical bridging, counter-mobility and structural defense."},
+    {n:"2 Field Engineer Regiment",loc:"Wallmansthal, Gauteng",type:"BATTALION STRUCT",size:"~500 Field Engineers",leader:"Lt Colonel",color:"#fb923c",r:"Forward assault engineering including mine clearance, breaching and pathfinding ops."}
+  ]},
+  {cat:"SA Army — Signals",color:"#818cf8",units:[
+    {n:"7 Signal Regiment",loc:"Thaba Tshwane, Gauteng",type:"BATTALION STRUCT",size:"~400 Comms Experts",leader:"Lt Colonel",color:"#fb923c",r:"Manages strategic backbone theater communications and electronic warfare architectures."},
+    {n:"8 Signal Regiment",loc:"Tempe, Free State",type:"PLATOON / DETACHMENT GROUPS",size:"Distributed Elements",leader:"Captain / Lieutenants",color:"#818cf8",r:"Dispatches modular communications elements directly to field command hubs."}
+  ]},
+  {cat:"SA Army Service Corps — Logistics",color:"#f59e0b",units:[
+    {n:"1 Service Battalion",loc:"Tempe, Free State",type:"BATTALION STRUCT",size:"~700 Support Staff",leader:"Lt Colonel",color:"#fb923c",r:"Heavy regional echelon managing bulk distribution of ammunition scales, heavy maintenance, and fuel lines."},
+    {n:"2 Service Battalion",loc:"Wallmansthal, Gauteng",type:"BATTALION STRUCT",size:"~600 Logistics Staff",leader:"Lt Colonel",color:"#fb923c",r:"Main supply chain engine running major line-haul convoys and ration packs distributions."},
+    {n:"Technical Services Corps",loc:"Thaba Tshwane",type:"BRIGADE-SCALE COMPONENT",size:"Wide Technical Matrix",leader:"Colonel / Director Tech",color:"#fb923c",r:"Echelon repair pools tasked with bringing heavy armour and transport assets back online."},
+    {n:"Ammunition Depot",loc:"Tempe + Wallmansthal",type:"SECURE WAREHOUSE STRUCTURE",size:"Staff Contingents",leader:"Major / Depot Master",color:"#f472b6",r:"Tightly audited nodes handling verification, distribution, and storage of live armaments scales."}
+  ]},
+  {cat:"SA Air Force",color:"#38bdf8",units:[
+    {n:"2 Squadron",loc:"AFB Waterkloof, Gauteng",type:"SQUADRON (COMPANY SCALE)",size:"~120 flight/ground crew",leader:"Lieutenant Colonel / Flight Lead",color:"#f472b6",r:"Operates VIP air systems including regional Boeing and Falcon jets."},
+    {n:"17 Squadron",loc:"AFB Hoedspruit, Limpopo",type:"SQUADRON (COMPANY SCALE)",size:"~150 specialists",leader:"Lieutenant Colonel / Flight Lead",color:"#f472b6",r:"Frontline intercept assets piloting JAS 39 Gripen multi-role combat aircraft."},
+    {n:"19 Squadron",loc:"AFB Langebaanweg, W. Cape",type:"SQUADRON (COMPANY SCALE)",size:"~100 specialists",leader:"Lieutenant Colonel",color:"#f472b6",r:"Maritime tracking assets operating C-47TP turbo conversion aircraft."},
+    {n:"35 Squadron",loc:"AFB Waterkloof",type:"SQUADRON (COMPANY SCALE)",size:"~180 crew assets",leader:"Lieutenant Colonel",color:"#f472b6",r:"Strategic logistics air transport handling long-haul C-130BZ aircraft networks."},
+    {n:"87 Helicopter Flying School",loc:"AFB Bloemspruit",type:"TRAINING SQUADRON SCALE",size:"~130 Instructors/Students",leader:"Lieutenant Colonel",color:"#f472b6",r:"Advanced rotary hub instructing pilots on heavy Oryx and Rooivalk combat tactics."}
+  ]},
+  {cat:"SA Navy",color:"#06b6d4",units:[
+    {n:"SAS Simonsberg (Frigate Squadron)",loc:"Simon's Town, W. Cape",type:"FLOTILLA (COMPANY/BATTALION HYBRID)",size:"~150 per hull crew",leader:"Captain (SAN) / Commander",color:"#f472b6",r:"Commands surface combat capability aboard Valour-class MEKO A-200 guided missile frigates."},
+    {n:"SAS Diamant (Submarine Flotilla)",loc:"Simon's Town, W. Cape",type:"FLOTILLA (COMPANY SCALE)",size:"~45 deep crew per hull",leader:"Commander (SAN)",color:"#f472b6",r:"Sub-surface stealth strike component operating Type 209/1400 diesel-electric systems."},
+    {n:"SAS Protea",loc:"Simon's Town",type:"VESSEL SPECIFIC DETACHMENT",size:"~100 specialist crew",leader:"Commander (SAN)",color:"#f472b6",r:"Specialized survey asset mapping bathymetry data for defense deployment fleets."}
+  ]},
+  {cat:"SA Military Health Service",color:"#f472b6",units:[
+    {n:"1 Military Hospital",loc:"Thaba Tshwane, Gauteng",type:"REGIONAL CLINICAL CENTER",size:"Large Medical Matrix",leader:"Brigadier General / Colonel",color:"#fb923c",r:"Primary tertiary medical infrastructure handling critical polytrauma care and evacuation steps."},
+    {n:"2 Military Hospital",loc:"Cape Town, W. Cape",type:"REGIONAL CLINICAL CENTER",size:"Medium Medical Matrix",leader:"Colonel",color:"#fb923c",r:"Regional military tracking hospital handling coastal base forces and fleet deployments."},
+    {n:"3 Military Hospital",loc:"Bloemfontein, Free State",type:"REGIONAL CLINICAL CENTER",size:"Medium Medical Matrix",leader:"Colonel",color:"#fb923c",r:"Central medical hub reinforcing the paratrooper brigades and training wings."},
+    {n:"17 Medical Battalion Group",loc:"Wallmansthal, Gauteng",type:"TACTICAL MEDICAL BATTALION",size:"~400 Field Doctors/Medics",leader:"Lt Colonel / Medical Lead",color:"#fb923c",r:"Dispatches modular field hospitals and combat medics directly to operational deployment sectors."}
+  ]},
+];
 
-        <div class="drawer-footer-actions">
-            <a href="map.html" class="giant-map-btn">
-                <i class="fa-solid fa-map-location-dot"></i>
-                <span>Launch Operational Map</span>
-                <i class="fa-solid fa-chevron-right tactical-arrow"></i>
-            </a>
-        </div>
+const DYK = {
+  "FIRE TEAM":[
+    {icon:"🎯",note:"The Team Leader personally draws ammo from the armoury and reconciles every round on return. A missing round requires a written explanation — there is no such thing as 'lost ammo' in the SANDF."},
+    {icon:"🔫",note:"The LMG Gunner carries roughly 12kg in ammunition alone. The assistant gunner (a rifleman) carries an extra 400 rounds. That's two people just managing firepower for the team."},
+    {icon:"💥",note:"Each 40mm grenade round is individually serialised and logged. The Grenadier must account for every HE, smoke, and illumination round — before and after every patrol."},
+  ],
+  "SECTION":[
+    {icon:"⭐",note:"The Section Commander is accountable for all 8-10 weapons in the section. Before handback to the armoury, every weapon is inspected barrel-to-stock. A single defect not noted beforehand becomes the Section Comd's liability."},
+    {icon:"🧹",note:"After every live fire exercise, a cleaning parade is called. No soldier leaves the range until every weapon is inspected and signed off by the Section Commander."},
+    {icon:"🔐",note:"Weapons are stored in a locked armoury. No weapon leaves without a signature. Every movement — issue and return — is logged. The armoury is audited without notice."},
+  ],
+  "PLATOON":[
+    {icon:"🛡️",note:"The Platoon Sergeant manages the ammunition register. Every round issued is recorded. Every round returned is counted. Unexplained shortages trigger a Board of Inquiry."},
+    {icon:"📡",note:"If the Signaller's radio fails during an operation, the Runner physically carries written messages between units. Comms must never be fully lost — this is why both roles exist in the same platoon."},
+    {icon:"⚕️",note:"The Medic holds controlled substances (morphine). Each ampoule is logged by serial number. A missing ampoule is a criminal investigation — not just disciplinary. Morphine is one of the most tightly controlled items in the army."},
+  ],
+  "COMPANY":[
+    {icon:"🔰",note:"The CSM holds keys to the company store. Every item — from body armour to vehicles — is signed in and out personally. The CSM is the last line of equipment accountability in the company."},
+    {icon:"🦅",note:"The Company Commander signs for equipment worth tens of millions of Rands. Loss or damage without a valid Board of Inquiry finding can result in financial recovery from the officer's own salary."},
+    {icon:"💣",note:"Support weapons (mortars, HMG) are held at company level but tasked forward to platoons when needed. Maintenance responsibility stays with the support weapons det — not the platoon they're attached to."},
+  ],
+  "BATTALION":[
+    {icon:"👑",note:"The RSM's word on standards and discipline is final within the battalion. Even officers are expected to meet the RSM's standards on parade. A weak RSM means a poorly disciplined battalion — CO's know this."},
+    {icon:"⚜️",note:"The CO signs for the entire battalion's equipment scale — weapons, vehicles, radios, stores. This is re-signed during every annual G4 equipment inspection. Discrepancies are formally investigated."},
+    {icon:"🔍",note:"The Intelligence Officer briefs the CO every morning with a SITREP. Before any operation, the IO produces a full intelligence estimate (the 'orders process'). No operation is authorised without it."},
+  ],
+};
+
+function SoldierDot({rk, size=28, showLabel=true, onSel}) {
+  const d = SD[rk];
+  if (!d) return null;
+  const [hov, setHov] = useState(false);
+  return (
+    <div onClick={()=>onSel(rk)} style={{display:"inline-flex",flexDirection:"column",alignItems:"center",cursor:"pointer",gap:3}}>
+      <div style={{
+        width:size,height:size,borderRadius:"50%",
+        background:d.color+"22",border:`2px solid ${d.color}`,
+        display:"flex",alignItems:"center",justifyContent:"center",
+        fontSize:size*0.42,transition:"transform .15s, box-shadow .15s",
+        transform:hov?"scale(1.2)":"scale(1)",
+        boxShadow:hov?`0 0 10px ${d.color}66`:"none",
+      }} onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}>{d.icon}</div>
+      {showLabel && <div style={{fontSize:8,color:d.color,letterSpacing:1,textAlign:"center"}}>{d.rank}</div>}
     </div>
+  );
+}
 
-    <main class="main-content">
-
-        <section id="hq" class="intel-section">
-            <div class="intel-header">
-                <h2>Joint Defence Headquarters</h2>
-                <p>Location Array: Pretoria Central Command Complex</p>
+function CmdGroup({title, members, bc, bg, size=30, onSel}) {
+  return (
+    <div style={{border:`1px solid ${bc}55`,borderTop:`2px solid ${bc}`,background:bg,padding:"10px 14px",borderRadius:2,marginBottom:10}}>
+      <div style={{fontSize:9,letterSpacing:2,color:bc,marginBottom:8,fontWeight:700}}>{title}</div>
+      <div style={{display:"flex",gap:14,flexWrap:"wrap"}}>
+        {members.map((rk,i)=>{
+          const d=SD[rk]; if(!d) return null;
+          return (
+            <div key={i} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
+              <SoldierDot rk={rk} size={size} showLabel={true} onSel={onSel}/>
+              <div style={{fontSize:8,color:d.color,letterSpacing:1,textAlign:"center",maxWidth:70}}>{rk.split(" ").slice(0,2).join(" ")}</div>
             </div>
-            <div class="status-grid">
-                <div class="status-card"><h3>DEFCON Status</h3><div class="status-value" style="color: var(--color-hq)">LEVEL 4</div></div>
-                <div class="status-card"><h3>Active Commands</h3><div class="status-value">12 Global</div></div>
-                <div class="status-card"><h3>Comms Link</h3><div class="status-value" style="color: var(--color-infantry)">SECURE</div></div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function FTeam({mini,label,color="#4ade80",bg="#052e16",onSel}) {
+  return (
+    <div style={{border:`1px solid ${color}55`,borderTop:`2px solid ${color}`,background:bg,padding:mini?"6px 8px":"10px 14px",borderRadius:2}}>
+      {!mini && <div style={{fontSize:9,letterSpacing:2,color,marginBottom:8,fontWeight:700}}>{label||"FIRE TEAM"}</div>}
+      <div style={{display:"flex",gap:mini?4:8,flexWrap:"wrap"}}>
+        {["Team Leader","Rifleman","Grenadier","LMG Gunner"].map((r,i)=>
+          <SoldierDot key={i} rk={r} size={mini?18:26} showLabel={!mini} onSel={onSel}/>
+        )}
+      </div>
+      {mini && <div style={{fontSize:8,color,marginTop:4,letterSpacing:1}}>FT·4</div>}
+    </div>
+  );
+}
+
+function Sec({mini,onSel}) {
+  const c="#22d3ee";
+  return (
+    <div style={{border:`1px solid ${c}44`,borderTop:`2px solid ${c}`,background:"#083344",padding:mini?"6px 8px":"12px",borderRadius:2}}>
+      <div style={{fontSize:mini?8:10,letterSpacing:2,color:c,marginBottom:mini?4:8,fontWeight:700}}>SECTION{mini?" ·8–10":""}</div>
+      {!mini && <CmdGroup title="SECTION COMMAND" members={["Section Commander"]} bc={c} bg="#041f2a" size={28} onSel={onSel}/>}
+      <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+        <FTeam mini={mini} label="FIRE TEAM α" color="#4ade80" bg="#041a0e" onSel={onSel}/>
+        <FTeam mini={mini} label="FIRE TEAM β" color="#4ade80" bg="#041a0e" onSel={onSel}/>
+      </div>
+    </div>
+  );
+}
+
+function Plt({mini,onSel}) {
+  const c="#818cf8";
+  return (
+    <div style={{border:`1px solid ${c}44`,borderTop:`2px solid ${c}`,background:"#1e1b4b",padding:mini?"6px 8px":"14px",borderRadius:2}}>
+      <div style={{fontSize:mini?8:10,letterSpacing:2,color:c,marginBottom:mini?4:10,fontWeight:700}}>PLATOON{mini?" ·~33":""}</div>
+      {!mini?(
+        <>
+          <CmdGroup title="PLATOON COMMAND" members={["Platoon Commander","Platoon Sergeant"]} bc={c} bg="#13123a" size={32} onSel={onSel}/>
+          <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:10}}>
+            {["α","β","γ"].map(n=><Sec key={n} mini={false} onSel={onSel}/>)}
+          </div>
+          <CmdGroup title="PLATOON HQ" members={["Signaller","Medic","Runner / Batman"]} bc="#6b7280" bg="#111827" size={28} onSel={onSel}/>
+        </>
+      ):(
+        <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+          {[1,2,3].map(n=><Sec key={n} mini={true} onSel={onSel}/>)}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Coy({mini,onSel}) {
+  const c="#f472b6";
+  return (
+    <div style={{border:`1px solid ${c}44`,borderTop:`2px solid ${c}`,background:"#2d1b2e",padding:mini?"6px 8px":"14px",borderRadius:2}}>
+      <div style={{fontSize:mini?8:10,letterSpacing:2,color:c,marginBottom:mini?4:10,fontWeight:700}}>COMPANY{mini?" ·~110":""}</div>
+      {!mini?(
+        <>
+          <CmdGroup title="COMPANY COMMAND" members={["Company Commander","Company 2IC","CSM"]} bc={c} bg="#1a0d1a" size={32} onSel={onSel}/>
+          <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:10}}>
+            {["α Pl","β Pl","γ Pl"].map(n=><Plt key={n} mini={true} onSel={onSel}/>)}
+          </div>
+          <CmdGroup title="SUPPORT WEAPONS" members={["Mortar Section","HMG Section","Signals Det","Admin / Log"]} bc="#fb923c" bg="#1a120a" size={28} onSel={onSel}/>
+        </>
+      ):(
+        <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+          {["α","β","γ"].map(n=><Plt key={n} mini={true} onSel={onSel}/>)}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Bn({onSel}) {
+  const c="#fb923c";
+  return (
+    <div style={{border:`1px solid ${c}44`,borderTop:`2px solid ${c}`,background:"#2c1810",padding:"14px",borderRadius:2}}>
+      <div style={{fontSize:10,letterSpacing:2,color:c,marginBottom:10,fontWeight:700}}>BATTALION · 600–800</div>
+      <CmdGroup title="BATTALION COMMAND" members={["Commanding Officer","Battalion 2IC","RSM","Intelligence Officer","Signals Officer"]} bc={c} bg="#1a0e06" size={34} onSel={onSel}/>
+      <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:10}}>
+        {["Alpha Coy","Bravo Coy","Charlie Coy"].map(n=><Coy key={n} mini={true} onSel={onSel}/>)}
+      </div>
+      <CmdGroup title="BATTALION SPECIALIST UNITS" members={["Recce Platoon","Mortar Platoon","Anti-Tank Platoon","Signals Det","Admin / Log"]} bc="#a78bfa" bg="#120d1a" size={28} onSel={onSel}/>
+    </div>
+  );
+}
+
+function DYKCards({level}) {
+  const notes = DYK[level]||[];
+  if (!notes.length) return null;
+  return (
+    <div style={{marginTop:20}}>
+      <div style={{fontSize:9,letterSpacing:3,color:"#374151",marginBottom:10,textAlign:"center"}}>● DID YOU KNOW ●</div>
+      <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+        {notes.map((n,i)=>(
+          <div key={i} style={{flex:"1 1 220px",background:"#0f0f1a",border:"1px solid #1f2937",borderLeft:"3px solid #374151",padding:"10px 12px"}}>
+            <div style={{fontSize:18,marginBottom:6}}>{n.icon}</div>
+            <div style={{fontSize:10,color:"#6b7280",lineHeight:1.8}}>{n.note}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Sheet({rk, onClose}) {
+  if (!rk) return null;
+  const d = SD[rk]; if (!d) return null;
+  return (
+    <div style={{position:"fixed",inset:0,zIndex:1000,background:"rgba(0,0,0,0.75)",display:"flex",alignItems:"flex-end"}} onClick={onClose}>
+      <div className="slide-up" onClick={e=>e.stopPropagation()} style={{
+        width:"100%",maxHeight:"78vh",overflow:"auto",
+        background:"#0a0a0f",borderTop:`3px solid ${d.color}`,padding:"20px",
+      }}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:16}}>
+          <div style={{display:"flex",gap:12,alignItems:"center"}}>
+            <div style={{width:50,height:50,borderRadius:"50%",background:d.color+"22",border:`2px solid ${d.color}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24}}>{d.icon}</div>
+            <div>
+              <div style={{fontSize:16,fontWeight:700,color:"#fff",letterSpacing:2}}>{rk}</div>
+              <div style={{fontSize:10,color:d.color,marginTop:2}}>{d.rank}</div>
+              <div style={{fontSize:9,color:"#6b7280",marginTop:2}}>{d.weapon}</div>
             </div>
-        </section>
+          </div>
+          <button onClick={onClose} style={{background:"transparent",border:"1px solid #374151",color:"#6b7280",width:30,height:30,cursor:"pointer",fontSize:14,borderRadius:2}}>✕</button>
+        </div>
+        <div style={{display:"flex",gap:16,flexWrap:"wrap"}}>
+          <div style={{flex:"1 1 200px"}}>
+            <div style={{fontSize:9,letterSpacing:2,color:d.color,marginBottom:8,fontWeight:700}}>STANDARD EQUIPMENT</div>
+            {(d.equipment||[]).map((e,i)=>(
+              <div key={i} style={{fontSize:10,color:"#9ca3af",marginBottom:5,paddingLeft:10,borderLeft:`2px solid ${d.color}44`,lineHeight:1.5}}>{e}</div>
+            ))}
+          </div>
+          <div style={{flex:"1 1 200px"}}>
+            <div style={{fontSize:9,letterSpacing:2,color:d.color,marginBottom:8,fontWeight:700}}>RESPONSIBILITIES</div>
+            {(d.responsibilities||[]).map((r,i)=>(
+              <div key={i} style={{fontSize:10,color:"#9ca3af",marginBottom:5,paddingLeft:10,borderLeft:`2px solid ${d.color}44`,lineHeight:1.5}}>{r}</div>
+            ))}
+            {d.owns && (
+              <div style={{marginTop:12,padding:"10px 12px",background:d.color+"11",border:`1px solid ${d.color}33`,borderRadius:2}}>
+                <div style={{fontSize:9,color:d.color,letterSpacing:1,marginBottom:4,fontWeight:700}}>ACCOUNTABILITY</div>
+                <div style={{fontSize:10,color:"#9ca3af",lineHeight:1.6}}>{d.owns}</div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
-        <section id="infantry" class="intel-section">
-            <div class="intel-header">
-                <h2>SA Army Infantry Formations</h2>
-                <p>Location Array: Thaba Tshwane Base Operations</p>
+function Drawer({open,onClose}) {
+  const [exp,setExp] = useState({});
+  const tog = c => setExp(p=>({...p,[c]:!p[c]}));
+  return (
+    <>
+      {open && <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:400}} onClick={onClose}/>}
+      <div style={{
+        position:"fixed",top:0,right:0,height:"100vh",width:320,maxWidth:"85vw",
+        background:"#0a0a0f",borderLeft:"1px solid #1f2937",
+        transform:open?"translateX(0)":"translateX(100%)",
+        transition:"transform 0.3s ease",zIndex:500,display:"flex",flexDirection:"column",paddingTop:16,
+      }}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"0 16px 14px",borderBottom:"1px solid #111"}}>
+          <div>
+            <div style={{fontSize:9,letterSpacing:3,color:"#374151"}}>REFERENCE</div>
+            <div style={{fontSize:14,fontWeight:700,color:"#fff",letterSpacing:2,marginTop:2}}>SANDF FORMATIONS</div>
+          </div>
+          <button onClick={onClose} style={{background:"transparent",border:"1px solid #1f2937",color:"#6b7280",width:28,height:28,cursor:"pointer",fontSize:14,borderRadius:2}}>✕</button>
+        </div>
+        <div style={{fontSize:8,color:"#6b7280",padding:"8px 16px",letterSpacing:1,lineHeight:1.4}}>
+          <span style={{color:"#fb923c"}}>■ Orange = Battalion Size</span> (600+)<br/>
+          <span style={{color:"#f472b6"}}>■ Pink = Coy/Squadron Size</span> (~110)<br/>
+          <span style={{color:"#818cf8"}}>■ Purple = Platoon Scale</span> (~33)
+        </div>
+        
+        {/* Scrollable containment box for the node tree list to preserve room for the bottom action element */}
+        <div style={{flexGrow:1, overflowY:"auto"}}>
+          {UNITS.map((cat,i)=>(
+            <div key={i} style={{borderTop:"1px solid #111"}}>
+              <button onClick={()=>tog(cat.cat)} style={{
+                width:"100%",padding:"11px 16px",background:"transparent",border:"none",
+                color:"#e2e8f0",cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",
+                borderLeft:`3px solid ${cat.color}`,
+              }}>
+                <div style={{textAlign:"left"}}>
+                  <div style={{fontSize:10,fontWeight:700,color:cat.color,letterSpacing:1}}>{cat.cat}</div>
+                  <div style={{fontSize:9,color:"#4b5563",marginTop:2}}>{cat.units.length} functional nodes</div>
+                </div>
+                <div style={{color:"#4b5563",fontSize:11}}>{exp[cat.cat]?"▲":"▼"}</div>
+              </button>
+              {exp[cat.cat] && (
+                <div className="fade-in" style={{padding:"4px 0 8px 16px"}}>
+                  {cat.units.map((u,j)=>(
+                    <div key={j} style={{padding:"8px 12px",borderLeft:`2px solid ${u.color}`,background:"#111119",marginBottom:6,marginRight:12,borderRadius:2}}>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:4}}>
+                        <div style={{fontSize:10,color:"#e2e8f0",fontWeight:600}}>{u.n}</div>
+                        <span style={{fontSize:7,background:u.color+"22",color:u.color,border:`1px solid ${u.color}55`,padding:"1px 4px",borderRadius:2,whiteSpace:"nowrap"}}>{u.type}</span>
+                      </div>
+                      <div style={{fontSize:8,color:"#9ca3af",marginTop:4}}>📍 {u.loc}</div>
+                      <div style={{fontSize:8,color:u.color,marginTop:2,fontWeight:"bold"}}>📊 {u.size} | 👑 {u.leader}</div>
+                      <div style={{fontSize:9,color:"#6b7280",marginTop:4,lineHeight:1.4,borderTop:"1px dashed #222",paddingTop:4}}>{u.r}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-            <div class="status-grid">
-                <div class="status-card"><h3>Mechanized Brigades</h3><div class="status-value">3 Active</div></div>
-                <div class="status-card"><h3>Personnel Count</h3><div class="status-value">14,200 Duty</div></div>
-                <div class="status-card"><h3>Readiness Rating</h3><div class="status-value" style="color: var(--color-infantry)">94% Combat</div></div>
+          ))}
+        </div>
+
+        {/* NEW: Giant Strategic Map Link Button at base of list tree */}
+        <div style={{borderTop:"1px solid #1f2937", background:"#0a0a0f"}}>
+          <a href="map.html" className="giant-map-btn">
+            <span><i class="fa-solid fa-map-location-dot" style={{marginRight:"8px"}}></i> Launch Operational Map</span>
+            <i class="fa-solid fa-chevron-right"></i>
+          </a>
+        </div>
+      </div>
+    </>
+  );
+}
+
+const LVLS=[
+  {label:"FIRE TEAM",short:"FT",s:"4",color:"#4ade80"},
+  {label:"SECTION",short:"SEC",s:"8–10",color:"#22d3ee"},
+  {label:"PLATOON",short:"PL",s:"~33",color:"#818cf8"},
+  {label:"COMPANY",short:"COY",s:"~110",color:"#f472b6"},
+  {label:"BATTALION",short:"BN",s:"600–800",color:"#fb923c"},
+];
+
+function App() {
+  const [view,setView] = useState("PLATOON");
+  const [sel,setSel] = useState(null);
+  const [drawer,setDrawer] = useState(false);
+  const onSel = useCallback(rk=>setSel(rk),[]);
+
+  return (
+    <div style={{minHeight:"100vh",background:"#060609",color:"#e2e8f0",fontFamily:"'Courier New',monospace",padding:"16px"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
+        <div>
+          <div style={{fontSize:9,letterSpacing:3,color:"#374151"}}>SANDF · SA ARMY</div>
+          <div style={{fontSize:18,fontWeight:900,letterSpacing:3,color:"#fff"}}>TACTICAL BREAKDOWN</div>
+          <div style={{fontSize:9,color:"#4b5563",marginTop:2}}>Tap any 🪖 icon for equipment & accountability</div>
+        </div>
+        <button onClick={()=>setDrawer(true)} style={{
+          background:"#0f0f1a",border:"1px solid #374151",color:"#9ca3af",
+          padding:"8px 10px",cursor:"pointer",fontSize:9,letterSpacing:2,borderRadius:2,
+        }}>SANDF<br/>UNITS ☰</button>
+      </div>
+
+      <div style={{display:"flex",gap:4,marginBottom:14,flexWrap:"wrap"}}>
+        {LVLS.map(l=>(
+          <button key={l.label} onClick={()=>setView(l.label)} style={{
+            background:view===l.label?l.color+"22":"transparent",
+            color:view===l.label?l.color:"#374151",
+            border:`1px solid ${view===l.label?l.color:"#1f2937"}`,
+            padding:"6px 10px",fontSize:10,letterSpacing:2,cursor:"pointer",borderRadius:2,
+          }}>{l.label}</button>
+        ))}
+      </div>
+
+      <div style={{background:"#0f0f1a",border:"1px solid #1f2937",padding:"8px 14px",fontSize:10,color:"#4b5563",marginBottom:14,letterSpacing:1,lineHeight:1.7,borderRadius:2}}>
+        {view==="FIRE TEAM"  && "4 soldiers · 🎯 Team Leader · 🪖 Rifleman · 💥 Grenadier · 🔫 LMG Gunner"}
+        {view==="SECTION"   && "⭐ Section Commander (Sgt) + 2 Fire Teams · 8–10 soldiers"}
+        {view==="PLATOON"   && "🎖️ Lt + 🛡️ Plt Sgt + 3 Sections + HQ · ~33 soldiers"}
+        {view==="COMPANY"   && "🦅 Major + 3 Platoons + Support Weapons · ~110 soldiers"}
+        {view==="BATTALION" && "⚜️ Lt Col + 3 Companies + Specialist Units · 600–800 soldiers"}
+      </div>
+
+      <div style={{overflowX:"auto"}}>
+        {view==="FIRE TEAM" && (
+          <div style={{maxWidth:440}}>
+            <FTeam color="#4ade80" bg="#052e16" onSel={onSel}/>
+            <div style={{marginTop:12,display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+              {["Team Leader","Rifleman","Grenadier","LMG Gunner"].map(r=>{
+                const d=SD[r];
+                return (
+                  <div key={r} onClick={()=>onSel(r)} style={{
+                    background:"#0a0a0f",border:`1px solid ${d.color}44`,
+                    borderLeft:`3px solid ${d.color}`,padding:"10px 12px",cursor:"pointer",borderRadius:2,
+                  }}
+                    onMouseEnter={e=>e.currentTarget.style.background=d.color+"11"}
+                    onMouseLeave={e=>e.currentTarget.style.background="#0a0a0f"}
+                  >
+                    <div style={{fontSize:22,marginBottom:4}}>{d.icon}</div>
+                    <div style={{fontSize:10,fontWeight:700,color:d.color}}>{r}</div>
+                    <div style={{fontSize:9,color:"#6b7280",marginTop:2}}>{d.rank}</div>
+                    <div style={{fontSize:9,color:"#4b5563",marginTop:3,lineHeight:1.5}}>{d.weapon}</div>
+                  </div>
+                );
+              })}
             </div>
-        </section>
+          </div>
+        )}
+        {view==="SECTION"   && <div style={{maxWidth:560}}><Sec mini={false} onSel={onSel}/></div>}
+        {view==="PLATOON"   && <Plt mini={false} onSel={onSel}/>}
+        {view==="COMPANY"   && <Coy mini={false} onSel={onSel}/>}
+        {view==="BATTALION" && <Bn onSel={onSel}/>}
+      </div>
 
-        <section id="specialforces" class="intel-section">
-            <div class="intel-header">
-                <h2>Special Forces Brigade Complex</h2>
-                <p>Location Array: Phalaborwa / Pretoria High-Security Enclaves</p>
+      <DYKCards level={view}/>
+
+      <div style={{display:"flex",alignItems:"center",justifyContent:"center",flexWrap:"wrap",marginTop:24,gap:0}}>
+        {LVLS.map((l,i)=>(
+          <div key={l.label} style={{display:"flex",alignItems:"center"}}>
+            <div onClick={()=>setView(l.label)} style={{
+              padding:"6px 10px",cursor:"pointer",textAlign:"center",
+              background:view===l.label?l.color+"22":"#0f0f1a",
+              border:`1px solid ${l.color}${view===l.label?"":"44"}`,borderRadius:2,
+            }}>
+              <div style={{fontSize:9,fontWeight:700,color:l.color,letterSpacing:2}}>{l.short}</div>
+              <div style={{fontSize:8,color:"#4b5563"}}>{l.s}</div>
             </div>
-            <div class="status-grid">
-                <div class="status-card"><h3>Tier 1 Regiments</h3><div class="status-value" style="color: var(--color-sf)">4 & 5 SFR</div></div>
-                <div class="status-card"><h3>Deployment Status</h3><div class="status-value">CLASSIFIED</div></div>
-                <div class="status-card"><h3>Asset Tracking</h3><div class="status-value">Dark Ops Protocol</div></div>
-            </div>
-        </section>
+            {i<LVLS.length-1 && <div style={{fontSize:9,color:"#374151",padding:"0 3px"}}>×3→</div>}
+          </div>
+        ))}
+      </div>
 
-        <section id="airforce" class="intel-section">
-            <div class="intel-header">
-                <h2>South African Air Force Operations</h2>
-                <p>Location Array: AFB Waterkloof / Swartkop Hubs</p>
-            </div>
-            <div class="status-grid">
-                <div class="status-card"><h3>Combat Squadrons</h3><div class="status-value">2 Active Jet</div></div>
-                <div class="status-card"><h3>Transport Fleet</h3><div class="status-value">8 Flight Ready</div></div>
-                <div class="status-card"><h3>Airspace Security</h3><div class="status-value" style="color: var(--color-airforce)">GREEN TIER</div></div>
-            </div>
-        </section>
+      <div style={{textAlign:"center",marginTop:20,color:"#1f2937",fontSize:8,letterSpacing:2}}>
+        SANDF · SA ARMY INFANTRY STRUCTURE · EDUCATIONAL REFERENCE ONLY
+      </div>
 
-        <section id="marines" class="intel-section">
-            <div class="intel-header">
-                <h2>Naval Fleet Command & Marine Corps</h2>
-                <p>Location Array: Simon's Town Base Fleet Hub</p>
-            </div>
-            <div class="status-grid">
-                <div class="status-card"><h3>Frigate Assets</h3><div class="status-value">Valour-Class Active</div></div>
-                <div class="status-card"><h3>Marine Elements</h3><div class="status-value">Maritime Reaction Squadron</div></div>
-                <div class="status-card"><h3>Patrol Matrix</h3><div class="status-value" style="color: var(--color-navy)">Coast Guard Active</div></div>
-            </div>
-        </section>
+      <Sheet rk={sel} onClose={()=>setSel(null)}/>
+      <Drawer open={drawer} onClose={()=>setDrawer(false)}/>
+    </div>
+  );
+}
 
-    </main>
-
-    <script>
-        function routeView() {
-            const hash = window.location.hash || '#hq';
-            
-            // 1. Hide all text profile views
-            document.querySelectorAll('.intel-section').forEach(section => {
-                section.classList.remove('active-pane');
-            });
-
-            // 2. Clear current highlighted side panel items
-            document.querySelectorAll('.drawer-item').forEach(item => {
-                item.classList.remove('active');
-            });
-
-            // 3. Mount targets dynamically
-            const targetPane = document.querySelector(hash);
-            if(targetPane) {
-                targetPane.classList.add('active-pane');
-            }
-
-            const targetMenuItem = document.querySelector(`.drawer-item a[href="${hash}"]`);
-            if(targetMenuItem) {
-                targetMenuItem.parentElement.classList.add('active');
-            }
-        }
-
-        // Window Event Listeners for hash change state processing
-        window.addEventListener('hashchange', routeView);
-        window.addEventListener('DOMContentLoaded', routeView);
-    </script>
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
 </body>
 </html>
