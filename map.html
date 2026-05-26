@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SANDF Operational Map</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
 <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -15,97 +16,170 @@ body{background:#060609;color:#e2e8f0;font-family:'Courier New',monospace;overfl
 .fade-in{animation:fadeIn .25s ease}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 
-/* Tactical radiating pulse animation */
+/* Tactical radiating pulse animation calibrated for Leaflet overlays */
 @keyframes tacticalPulse {
-  0% { transform: scale(0.8); opacity: 0.8; box-shadow: 0 0 0 0 var(--pulse-color); }
-  70% { transform: scale(1.8); opacity: 0; box-shadow: 0 0 0 12px var(--pulse-color); }
-  100% { transform: scale(0.8); opacity: 0; box-shadow: 0 0 0 0 var(--pulse-color); }
+  0% { transform: scale(0.6); opacity: 0.9; box-shadow: 0 0 0 0 var(--pulse-color); }
+  70% { transform: scale(1.6); opacity: 0; box-shadow: 0 0 0 14px var(--pulse-color); }
+  100% { transform: scale(0.6); opacity: 0; box-shadow: 0 0 0 0 var(--pulse-color); }
 }
 
-.radar-node {
-  position: absolute;
-  cursor: pointer;
-  transform: translate(-50%, -50%);
+/* Custom Leaflet Marker container overrides */
+.leaflet-marker-icon {
+  background: none !important;
+  border: none !important;
+}
+
+.radar-node-container {
+  position: relative;
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10;
+  cursor: pointer;
 }
 
 .pulse-ring {
   position: absolute;
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  border: 1px solid var(--pulse-color);
+  border: 1.5px solid var(--pulse-color);
   background: transparent;
   pointer-events: none;
   animation: tacticalPulse 2s infinite cubic-bezier(0.25, 0, 0, 1);
 }
 
 .node-core {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   background: #060609;
   border: 2px solid var(--pulse-color);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 8px;
+  font-size: 9px;
   z-index: 2;
   transition: all 0.2s ease;
 }
 
-.radar-node:hover .node-core {
+.radar-node-container:hover .node-core {
   background: var(--pulse-color);
-  transform: scale(1.2);
-  box-shadow: 0 0 12px var(--pulse-color);
+  transform: scale(1.25);
+  box-shadow: 0 0 15px var(--pulse-color);
 }
 
-/* Map Grid Overlay Background */
-.grid-overlay {
-  background-image: 
-    linear-gradient(rgba(18, 24, 38, 0.2) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(18, 24, 38, 0.2) 1px, transparent 1px);
-  background-size: 20px 20px;
+/* Dark Tactical Custom Popup Cards for Leaflet */
+.leaflet-popup-content-wrapper {
+  background: #0f0f1a !important;
+  color: #e2e8f0 !important;
+  border: 1px solid #1f2937;
+  border-radius: 2px !important;
+  font-family: 'Courier New', monospace;
+  padding: 2px;
+}
+
+.leaflet-popup-tip {
+  background: #0f0f1a !important;
+  border: 1px solid #1f2937;
+}
+
+.leaflet-popup-close-button {
+  color: #6b7280 !important;
 }
 </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const { useState, useMemo } = React;
+const { useState, useMemo, useEffect, useRef } = React;
 
-// Precise coordinates for South Africa SVG viewport (1000x850 grid)
+// Calibrated true Latitude & Longitude structural matrix array coordinates for South Africa bases
 const BASE_HQ = [
-  { n: "HQ Land Command / 7 Signal / 1 Mil Hospital / Tech Corps", loc: "Thaba Tshwane, Gauteng", cx: 645, cy: 300, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Strategic operations hub coordinating national armor, signals, and defense medical response." },
-  { n: "2 SA Infantry / 2 Field Engineer / 17 Med Bn", loc: "Wallmansthal, Gauteng", cx: 652, cy: 285, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Heavy mechanized infantry and forward engineering deployment assets." },
-  { n: "5 SA Infantry", loc: "Doornkop, Gauteng", cx: 635, cy: 312, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "High-density urban operations matrix." },
-  { n: "2 Squadron (Air Support) / 35 Squadron", loc: "AFB Waterkloof, Gauteng", cx: 648, cy: 295, level: "COMPANY", color: "#f472b6", icon: "🦅", desc: "Frontline air transport fleet and critical logistics runways." },
-  { n: "1 SA Infantry / 14 Artillery / 45 Para Bn", loc: "Tempe, Free State", cx: 535, cy: 485, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Central conventional rapid response, heavy airborne element and active training groups." },
-  { n: "1 Service Battalion / 1 Eng Support / 3 Mil Hosp", loc: "Bloemfontein, Free State", cx: 542, cy: 495, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Echelon support infrastructure, supply lanes, and tactical bridging assets." },
-  { n: "Regiment Mooirivier / 4 Artillery Regiment", loc: "Potchefstroom, NW", cx: 580, cy: 345, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Heavy strike elements fielding Olifant Mk2 main battle tanks and 155mm field assets." },
-  { n: "3 SA Infantry Battalion", loc: "Kimberley, N. Cape", cx: 460, cy: 460, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Desert warfare special combat training center." },
-  { n: "8 SA Infantry Battalion", loc: "Upington, N. Cape", cx: 310, cy: 450, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Mechanized desert strike group running specialized Ratel deployment profiles." },
-  { n: "4 SA Infantry Battalion", loc: "Middelburg, Mpumalanga", cx: 710, cy: 290, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Motorized combat units using regional Samil troop deployment platforms." },
-  { n: "7 SA Infantry / 5 Special Forces Regiment", loc: "Phalaborwa, Limpopo", cx: 745, cy: 170, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Deep infiltration recon, elite bushveld tracking, and northern border safeguarding." },
-  { n: "17 Squadron (JAS 39 Gripen Command)", loc: "AFB Hoedspruit, Limpopo", cx: 755, cy: 195, level: "COMPANY", color: "#f472b6", icon: "🦅", desc: "Frontline supersonic interception assets." },
-  { n: "9 SA Infantry / Natal Mounted Rifles", loc: "Mtubatuba & Durban, KZN", cx: 740, cy: 510, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Coastal combat thicket formations and mobile light armored reconnaissance." },
-  { n: "21 SA Infantry Battalion", loc: "Grahamstown, E. Cape", cx: 560, cy: 750, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Eastern Cape regional defensive structural infantry asset." },
-  { n: "6 SA Infantry Battalion", loc: "Oudtshoorn, W. Cape", cx: 380, cy: 770, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Light infantry matrix optimized for mountainous terrain warfare." },
-  { n: "SAS Simonsberg / SAS Diamant (Fleet HQ)", loc: "Simon's Town, W. Cape", cx: 205, cy: 795, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Valour-class guided missile frigates and Type 209 submarine stealth strike command." },
-  { n: "4 Special Forces Regiment (Maritime)", loc: "Langebaanweg, W. Cape", cx: 190, cy: 740, level: "COMPANY", color: "#f472b6", icon: "🦅", desc: "Elite specialized maritime reconnaissance and covert diving strike elements." }
+  { n: "HQ Land Command / 7 Signal / 1 Mil Hospital / Tech Corps", loc: "Thaba Tshwane, Gauteng", lat: -25.7915, lng: 28.1468, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Strategic operations hub coordinating national armor, signals, and defense medical response." },
+  { n: "2 SA Infantry / 2 Field Engineer / 17 Med Bn", loc: "Wallmansthal, Gauteng", lat: -25.5342, lng: 28.2891, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Heavy mechanized infantry and forward engineering deployment assets." },
+  { n: "5 SA Infantry", loc: "Doornkop, Gauteng", lat: -26.2166, lng: 27.8433, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "High-density urban operations matrix." },
+  { n: "2 Squadron (Air Support) / 35 Squadron", loc: "AFB Waterkloof, Gauteng", lat: -25.8302, lng: 28.2145, level: "COMPANY", color: "#f472b6", icon: "🦅", desc: "Frontline air transport fleet and critical logistics runways." },
+  { n: "1 SA Infantry / 14 Artillery / 45 Para Bn", loc: "Tempe, Free State", lat: -29.0988, lng: 26.1664, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Central conventional rapid response, heavy airborne element and active training groups." },
+  { n: "1 Service Battalion / 1 Eng Support / 3 Mil Hosp", loc: "Bloemfontein, Free State", lat: -29.1172, lng: 26.2204, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Echelon support infrastructure, supply lanes, and tactical bridging assets." },
+  { n: "Regiment Mooirivier / 4 Artillery Regiment", loc: "Potchefstroom, NW", lat: -26.6989, lng: 27.0792, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Heavy strike elements fielding Olifant Mk2 main battle tanks and 155mm field assets." },
+  { n: "3 SA Infantry Battalion", loc: "Kimberley, N. Cape", lat: -28.7424, lng: 24.7471, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Desert warfare special combat training center." },
+  { n: "8 SA Infantry Battalion", loc: "Upington, N. Cape", lat: -28.4024, lng: 21.2618, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Mechanized desert strike group running specialized Ratel deployment profiles." },
+  { n: "4 SA Infantry Battalion", loc: "Middelburg, Mpumalanga", lat: -25.7667, lng: 29.4622, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Motorized combat units using regional Samil troop deployment platforms." },
+  { n: "7 SA Infantry / 5 Special Forces Regiment", loc: "Phalaborwa, Limpopo", lat: -23.9412, lng: 31.1402, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Deep infiltration recon, elite bushveld tracking, and northern border safeguarding." },
+  { n: "17 Squadron (JAS 39 Gripen Command)", loc: "AFB Hoedspruit, Limpopo", lat: -24.3542, lng: 31.0514, level: "COMPANY", color: "#f472b6", icon: "🦅", desc: "Frontline supersonic interception assets." },
+  { n: "9 SA Infantry / Natal Mounted Rifles", loc: "Mtubatuba & Durban, KZN", lat: -28.4167, lng: 32.1833, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Coastal combat thicket formations and mobile light armored reconnaissance." },
+  { n: "21 SA Infantry Battalion", loc: "Grahamstown, E. Cape", lat: -33.3151, lng: 26.5186, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Eastern Cape regional defensive structural infantry asset." },
+  { n: "6 SA Infantry Battalion", loc: "Oudtshoorn, W. Cape", lat: -33.6002, lng: 22.1994, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Light infantry matrix optimized for mountainous terrain warfare." },
+  { n: "SAS Simonsberg / SAS Diamant (Fleet HQ)", loc: "Simon's Town, W. Cape", lat: -34.1924, lng: 18.4328, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Valour-class guided missile frigates and Type 209 submarine stealth strike command." },
+  { n: "4 Special Forces Regiment (Maritime)", loc: "Langebaanweg, W. Cape", lat: -32.9686, lng: 18.1581, level: "COMPANY", color: "#f472b6", icon: "🦅", desc: "Elite specialized maritime reconnaissance and covert diving strike elements." }
 ];
 
 function App() {
   const [activeNode, setActiveNode] = useState(null);
   const [filterLevel, setFilterLevel] = useState("ALL");
+  
+  const mapRef = useRef(null);
+  const markersLayerRef = useRef(null);
 
   const filteredHQ = useMemo(() => {
     if (filterLevel === "ALL") return BASE_HQ;
     return BASE_HQ.filter(node => node.level === filterLevel);
   }, [filterLevel]);
+
+  // Hook to safely handle initialization and lifecycle updates for Leaflet Map Frame inside React
+  useEffect(() => {
+    if (!mapRef.current) {
+      // Setup base map viewport centered generally across South African borders
+      mapRef.current = L.map('map-viewport-pane', {
+        zoomControl: false,
+        attributionControl: false
+      }).setView([-28.8, 25.0], 6);
+
+      // Dark Theme Tileset Configuration (CartoDB Dark Matter style matching your theme specs)
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        maxZoom: 18,
+        minZoom: 5
+      }).addTo(mapRef.current);
+
+      // Add Zoom Controls contextually in the upper right quadrant
+      L.control.zoom({ position: 'topright' }).addTo(mapRef.current);
+
+      // Initialize the global marker storage array layer
+      markersLayerRef.current = L.layerGroup().addTo(mapRef.current);
+    }
+  }, []);
+
+  // Update real-time markers instantly whenever filter matrix changes
+  useEffect(() => {
+    if (markersLayerRef.current && mapRef.current) {
+      markersLayerRef.current.clearLayers();
+
+      filteredHQ.forEach((node) => {
+        // Build customized DOM element matching radiating custom radar icons styles
+        const customIcon = L.divIcon({
+          className: 'leaflet-custom-marker-wrapper',
+          iconSize: [30, 30],
+          iconAnchor: [15, 15],
+          html: `
+            <div class="radar-node-container" style="--pulse-color: ${node.color}">
+              <div class="pulse-ring"></div>
+              <div class="node-core">${node.icon}</div>
+            </div>
+          `
+        });
+
+        const marker = L.marker([node.lat, node.lng], { icon: customIcon });
+
+        // Wire event tracking triggers up to React UI state
+        marker.on('mouseover', () => setActiveNode(node));
+        marker.on('click', () => routeToMainStructure(node.level, node.n));
+
+        markersLayerRef.current.addLayer(marker);
+      });
+    }
+  }, [filteredHQ]);
 
   // Simulates jumping back to index.html with structural search parameters
   const routeToMainStructure = (level, nodeName) => {
@@ -117,15 +191,15 @@ function App() {
   return (
     <div className="fade-in" style={{ minHeight: "100vh", position: "relative", padding: "16px" }}>
       {/* Tactical Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px", borderBottom: "1px solid #111827", paddingBottom: "12px" }}>
+      <div style={{ display: "flex", justifycontent: "space-between", alignItems: "flex-start", marginBottom: "16px", borderBottom: "1px solid #111827", paddingBottom: "12px" }}>
         <div>
-          <div style={{ fontSize: "9px", letterSpacing: "3px", color: "#3b82f6" }}>● STRATEGIC COMMAND NET</div>
+          <div style={{ fontSize: "9px", letterSpacing: "3px", color: "#3b82f6" }}>StrATEGIC COMMAND NET</div>
           <div style={{ fontSize: "18px", fontWeight: "900", letterSpacing: "3px", color: "#fff" }}>GEOSPATIAL DEPLOYMENT MAP</div>
           <div style={{ fontSize: "9px", color: "#4b5563", marginTop: "2px" }}>Tracking operational Headquarters. Click any node to open its structural view.</div>
         </div>
         <a href="index.html" style={{
           background: "#0f0f1a", border: "1px solid #374151", color: "#9ca3af",
-          padding: "8px 12px", cursor: "pointer", fontSize: "9px", letterSpacing: "2px", textDecoration: "none", borderRadius: "2px"
+          padding: "8px 12px", cursor: "pointer", fontSize: "9px", letterSpacing: "2px", textDecoration: "none", borderRadius: "2px", marginLeft: "auto"
         }}><i className="fa-solid fa-bars-staggered" style={{ marginRight: "6px" }}></i> TACTICAL TREE</a>
       </div>
 
@@ -142,48 +216,16 @@ function App() {
       </div>
 
       <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
-        {/* Interactive Tactical Map Component Canvas */}
-        <div className="grid-overlay" style={{
-          flex: "1 1 600px", position: "relative", background: "#09090e", 
-          border: "1px solid #1f2937", borderRadius: "2px", overflow: "hidden", minHeight: "580px"
+        {/* Real Leaflet Map Engine Container Box */}
+        <div style={{
+          flex: "1 1 600px", background: "#09090e", 
+          border: "1px solid #1f2937", borderRadius: "2px", overflow: "hidden", minHeight: "580px", position: "relative"
         }}>
-          
-          {/* Geometrically Clean SVG Path Outline of South Africa */}
-          <svg viewBox="100 80 800 750" style={{ width: "100%", height: "100%", stroke: "#1e293b", strokeWidth: "1.5", fill: "#0c111d" }}>
-            <path d="M 230 730 
-                     Q 170 760 190 790 
-                     Q 240 820 320 780 
-                     Q 400 810 500 790 
-                     Q 570 810 640 760 
-                     Q 700 700 760 620 
-                     Q 810 540 770 480 
-                     Q 830 380 770 240 
-                     Q 780 140 700 110 
-                     Q 600 120 540 180 
-                     Q 450 160 380 220 
-                     Q 280 230 250 310 
-                     Q 280 400 240 500 
-                     Q 180 580 230 730 Z" />
-            
-            {/* Internal Provincial Reference Dotted Lines */}
-            <path d="M 380 220 Q 420 400 500 420 M 540 180 L 535 485 M 640 760 Q 600 550 535 485 M 240 500 Q 450 540 535 485 M 770 480 Q 600 480 535 485" 
-                  style={{ fill: "none", stroke: "#111827", strokeWidth: "1", strokeDasharray: "4 4" }} />
-          </svg>
-
-          {/* Plotting Radiating Radar Nodes onto Coordinate Space */}
-          {filteredHQ.map((node, index) => (
-            <div key={index} className="radar-node" 
-                 style={{ left: `${(node.cx / 10)}%`, top: `${(node.cy / 8.5)}%`, '--pulse-color': node.color }}
-                 onMouseEnter={() => setActiveNode(node)}
-                 onClick={() => routeToMainStructure(node.level, node.n)}>
-              <div className="pulse-ring"></div>
-              <div className="node-core">{node.icon}</div>
-            </div>
-          ))}
+          <div id="map-viewport-pane" style={{ width: "100%", height: "100%", position: "absolute", inset: 0, zIndex: 1 }}></div>
         </div>
 
         {/* Real-time Side Telemetry Feed Dashboard */}
-        <div style={{ flex: "1 1 280px", display: "flex", flexDirection: "column", gap: "12px" }}>
+        <div style={{ flex: "1 1 280px", display: "flex", flexDirection: "column", gap: "12px", zIndex: 5 }}>
           <div style={{ background: "#0f0f1a", border: "1px solid #1f2937", padding: "14px", borderRadius: "2px" }}>
             <div style={{ fontSize: "9px", letterSpacing: "2px", color: "#6b7280", marginBottom: "8px" }}>TELEMETRY READOUT</div>
             
@@ -216,11 +258,11 @@ function App() {
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                 <span style={{ width: "8px", height: "8px", background: "#fb923c", borderRadius: "50%" }}></span>
-                <span style={{ color: "#9ca3af" }}>Battalion Headquarters (600–800 Personnel Scope)</span>
+                <span style={{ color: "#9ca3af" }}>Battalion Headquarters (600–800 Personnel)</span>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                 <span style={{ width: "8px", height: "8px", background: "#f472b6", borderRadius: "50%" }}></span>
-                <span style={{ color: "#9ca3af" }}>Company / Air Squadron Hubs (~110 Personnel Scope)</span>
+                <span style={{ color: "#9ca3af" }}>Company / Air Squadron Hubs (~110 Personnel)</span>
               </div>
             </div>
           </div>
@@ -236,5 +278,6 @@ function App() {
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 </body>
 </html>
