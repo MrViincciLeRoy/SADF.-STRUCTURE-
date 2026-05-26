@@ -17,43 +17,30 @@ body{background:#060609;color:#e2e8f0;font-family:'Courier New',monospace}
 .fade-in{animation:fadeIn .2s ease}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 button{font-family:'Courier New',monospace}
-
-/* High visibility tactical glow styling for map interface route link */
-.giant-map-btn {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: calc(100% - 24px);
-  margin: 16px 12px 24px 12px;
-  padding: 14px 16px;
-  background: linear-gradient(135deg, #0d1527 0%, #070a12 100%);
-  border: 1px solid #3b82f6;
-  border-radius: 2px;
-  color: #ffffff;
-  text-decoration: none;
-  font-family: 'Courier New', monospace;
-  font-weight: bold;
-  font-size: 10px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
-}
-.giant-map-btn:hover {
-  background: #3b82f6;
-  color: #060609;
-  box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
-}
-.giant-map-btn i {
-  font-size: 13px;
-}
+.cursor-blink{display:inline-block;width:2px;height:11px;background:#22d3ee;margin-left:1px;animation:blink 0.7s step-end infinite;vertical-align:middle}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.giant-map-btn{display:flex;align-items:center;justify-content:space-between;width:calc(100% - 24px);margin:16px 12px 24px 12px;padding:14px 16px;background:linear-gradient(135deg,#0d1527 0%,#070a12 100%);border:1px solid #3b82f6;border-radius:2px;color:#ffffff;text-decoration:none;font-family:'Courier New',monospace;font-weight:bold;font-size:10px;letter-spacing:2px;text-transform:uppercase;transition:all 0.2s ease;box-shadow:0 4px 12px rgba(59,130,246,0.1)}
+.giant-map-btn:hover{background:#3b82f6;color:#060609;box-shadow:0 0 15px rgba(59,130,246,0.4)}
+.giant-map-btn i{font-size:13px}
+/* slider */
+.slider-track{display:flex;transition:transform 0.35s cubic-bezier(.4,0,.2,1)}
+.slider-wrap{overflow:hidden;position:relative}
+.dot-nav{display:flex;gap:6px;justify-content:center;margin-top:10px}
+.dot-nav span{width:6px;height:6px;border-radius:50%;background:#374151;cursor:pointer;transition:all 0.2s}
+.dot-nav span.active{background:#22d3ee;width:14px;border-radius:3px}
+/* branch badges */
+.branch-badge{font-size:8px;letter-spacing:1.5px;padding:2px 6px;border-radius:2px;font-weight:700;display:inline-block}
+/* swipe hint */
+@keyframes swipeHint{0%{transform:translateX(0);opacity:1}50%{transform:translateX(-8px);opacity:0.5}100%{transform:translateX(0);opacity:1}}
+.swipe-hint{animation:swipeHint 2s ease-in-out 1.5s 2}
 </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const {useState,useCallback} = React;
+const {useState,useCallback,useEffect,useRef} = React;
 
+/* ─────────────────────────── SOLDIER DATA ─────────────────────────── */
 const SD = {
   "Team Leader":{icon:"🎯",rank:"Lance Corporal",color:"#f59e0b",weapon:"R4 Assault Rifle (5.56mm)",
     equipment:["R4 Assault Rifle + 6 magazines (30rds each)","Z88 9mm Pistol (secondary)","Personal VHF radio","Binoculars","Map + compass + protractor","PASGT body armour + helmet","Combat webbing","2x fragmentation grenades","Smoke grenade","Personal first aid kit (IFAK)","72hr ration pack"],
@@ -157,6 +144,157 @@ const SD = {
     owns:"ATGM systems are signed for at battalion level — each unit is extremely high value. Damage or loss requires a formal Board of Inquiry."},
 };
 
+/* ─────────────────────────── DID YOU KNOW DATA ─────────────────────────── */
+const DYK = {
+  "FIRE TEAM":[
+    {icon:"🎯",note:"The R4 assault rifle is a South African-designed derivative of the Israeli Galil — one of the few countries that designed their own standard service rifle. It fires 5.56×45mm NATO and holds 35 rounds per magazine."},
+    {icon:"🔫",note:"The LMG Gunner carries roughly 12kg in ammunition alone — before adding food, water, or personal kit. On a 72-hour patrol, total carried weight can exceed 40kg per soldier."},
+    {icon:"💥",note:"Each 40mm grenade round is individually serialised and logged. The Grenadier must account for every HE, smoke, and illumination round — before and after every patrol. A single unexplained missing round requires a written report."},
+    {icon:"🪖",note:"The fire team is the smallest combat unit in the SA Army — yet it is the unit that actually closes with and defeats the enemy. Everything above it exists to support this four-person element."},
+    {icon:"🧤",note:"The Rifleman's bayonet is not ceremonial. It is a fully functional combat blade and last-resort weapon. SA soldiers are trained in bayonet drills as part of basic combat training."},
+    {icon:"🔕",note:"In noise-critical environments, the fire team uses hand signals exclusively. The full SANDF hand signal system includes over 30 distinct tactical signals — every soldier must know them all."},
+  ],
+  "SECTION":[
+    {icon:"⭐",note:"The Section Commander is accountable for all 8-10 weapons in the section. Before handback to the armoury, every weapon is inspected barrel-to-stock. A single defect not noted beforehand becomes the Section Comd's liability."},
+    {icon:"🧹",note:"After every live fire exercise, a cleaning parade is called. No soldier leaves the range until every weapon is inspected and signed off by the Section Commander."},
+    {icon:"🔐",note:"Weapons are stored in a locked armoury. No weapon leaves without a signature. Every movement — issue and return — is logged. The armoury is audited without notice."},
+    {icon:"📐",note:"A section attack has a defined drilled sequence: approach, assault, consolidation, and reorganisation. These four phases are rehearsed repeatedly until automatic — muscle memory in contact is what keeps soldiers alive."},
+    {icon:"🗺️",note:"Every section-level navigator carries a 1:50,000 topographic map. In the SA Army, even private soldiers are expected to be able to navigate by map and compass — GPS is considered a luxury, not a standard."},
+    {icon:"🌙",note:"South African sections train extensively for night operations. A night section attack uses the same four phases as a day attack, but soldiers navigate using pace counting, compass bearings, and star navigation as primary methods."},
+  ],
+  "PLATOON":[
+    {icon:"🛡️",note:"The Platoon Sergeant manages the ammunition register. Every round issued is recorded. Every round returned is counted. Unexplained shortages trigger a Board of Inquiry."},
+    {icon:"📡",note:"If the Signaller's radio fails during an operation, the Runner physically carries written messages between units. Comms must never be fully lost — this is why both roles exist in the same platoon."},
+    {icon:"⚕️",note:"The Medic holds controlled substances (morphine). Each ampoule is logged by serial number. A missing ampoule is a criminal investigation — not just disciplinary. Morphine is one of the most tightly controlled items in the army."},
+    {icon:"📋",note:"A platoon 'O Group' (Orders Group) can last 1-3 hours. The platoon commander briefs every section commander using the SMEAC format: Situation, Mission, Execution, Administration, Command and Signals."},
+    {icon:"🚁",note:"Platoon-level casevac (casualty evacuation) relies heavily on the Oryx helicopter. In the absence of air assets, the Platoon Sergeant organises vehicle casevac — which can take a casualty 30 minutes longer to reach surgical care."},
+    {icon:"🌿",note:"SANDF infantry platoons operating on the Zimbabwe or Mozambique borders under Op Corona can spend up to 21 days in the bush without return to base. All rations, ammo, and water must be carried or resupplied by helicopter."},
+  ],
+  "COMPANY":[
+    {icon:"🔰",note:"The CSM holds keys to the company store. Every item — from body armour to vehicles — is signed in and out personally. The CSM is the last line of equipment accountability in the company."},
+    {icon:"🦅",note:"The Company Commander signs for equipment worth tens of millions of Rands. Loss or damage without a valid Board of Inquiry finding can result in financial recovery from the officer's own salary."},
+    {icon:"💣",note:"Support weapons (mortars, HMG) are held at company level but tasked forward to platoons when needed. Maintenance responsibility stays with the support weapons det — not the platoon they're attached to."},
+    {icon:"🚗",note:"An infantry company on operations typically deploys with a minimum of 8 vehicles — including SAMIL 20s, Land Rover Defenders, and occasionally an RG-31 Nyala MRAP. Fuel accountability is recorded to the litre."},
+    {icon:"📻",note:"The company operates on two radio nets simultaneously — an internal company net linking the three platoons, and a higher net linking back to battalion HQ. The CSM manages the admin net while the 2IC manages the ops net."},
+    {icon:"🎖️",note:"In the SANDF, a company commander holds the same command authority as a ship captain in the Navy. Within their area of operations, their orders are final — they answer only to their battalion CO."},
+  ],
+  "BATTALION":[
+    {icon:"👑",note:"The RSM's word on standards and discipline is final within the battalion. Even officers are expected to meet the RSM's standards on parade. A weak RSM means a poorly disciplined battalion — CO's know this."},
+    {icon:"⚜️",note:"The CO signs for the entire battalion's equipment scale — weapons, vehicles, radios, stores. This is re-signed during every annual G4 equipment inspection. Discrepancies are formally investigated."},
+    {icon:"🔍",note:"The Intelligence Officer briefs the CO every morning with a SITREP. Before any operation, the IO produces a full intelligence estimate (the 'orders process'). No operation is authorised without it."},
+    {icon:"🏗️",note:"A full SANDF battalion on field exercise requires a 'B Echelon' — a rear logistics base managing food, fuel, ammunition, and vehicle spares. This support tail is often as large as a company itself."},
+    {icon:"📑",note:"An annual G4 equipment inspection of a battalion can take 3-5 full days. Every weapon serial number is checked against the register. Every vehicle kilometre log is verified. Every radio and optic is tested. Missing items result in formal Boards of Inquiry."},
+    {icon:"🌍",note:"SANDF battalions have deployed to the DRC (MONUSCO), Sudan, South Sudan, CAR, and Mozambique (SAMIM). In DRC, SA infantry battalions have engaged in some of the most intense combat by any African peacekeeping force."},
+  ],
+};
+
+/* ─────────────────────────── SPECIAL UNITS SLIDER DATA ─────────────────────────── */
+const BRANCH_COLORS = {
+  "SA Army Infantry": "#4ade80",
+  "SA Army Armour": "#fb923c",
+  "SA Army Artillery": "#ef4444",
+  "SA Army Engineers": "#22d3ee",
+  "SA Army Special Forces": "#a78bfa",
+  "SA Air Force": "#38bdf8",
+  "SA Navy": "#06b6d4",
+  "SAMHS": "#f472b6",
+};
+
+const SPECIAL_UNITS = {
+  "FIRE TEAM":[
+    {name:"Recce Operator (Pair)",branch:"SA Army Special Forces",icon:"🔭",size:"2-man pair",color:"#a78bfa",
+     desc:"The smallest and most elite tactical element in the SANDF. Two operators can insert 72-96 hours ahead of main force, observe enemy positions, and extract without being detected. Trained at 5 SF Regt in Phalaborwa.",
+     equipment:["R4 (suppressed)","NTW-20 anti-material rifle (pair carries one)","Night vision devices (NODs)","Ghillie suit","Satellite radio (SATCOM)","96hr minimal ration pack — cold food only","GPS + compass + map","Covert camera kit"]},
+    {name:"SAAF JTAC (Air Controller)",branch:"SA Air Force",icon:"✈️",size:"1-2 operators",color:"#38bdf8",
+     desc:"A Joint Terminal Attack Controller embedded at fire team or section level to coordinate close air support from Gripens or Rooivalk attack helicopters. One of the most highly trained individuals on the battlefield.",
+     equipment:["Encrypted SATCOM radio","Laser target designator","Rangefinder + binoculars","Tablet with digital maps","R4 personal weapon","Body armour + helmet","Aviation frequency card"]},
+    {name:"Combat Diver (Pair)",branch:"SA Navy",icon:"🤿",size:"2-man pair",color:"#06b6d4",
+     desc:"Trained at SAS Saldanha, SA Navy combat divers form the smallest maritime direct action element. Two divers can conduct beach reconnaissance, underwater demolition, or covert harbour infiltration.",
+     equipment:["Draeger LAR V closed-circuit rebreather","Wetsuit + fins + mask","Underwater navigation board","Demolition kit (limpet mines)","R4 (waterproofed)","Underwater compass","Dive knife"]},
+    {name:"SAEC Combat Sapper Pair",branch:"SA Army Engineers",icon:"💣",size:"2-4 sappers",color:"#22d3ee",
+     desc:"Attached to fire teams during breaching operations. Sappers carry mine detectors and demolition charges to clear paths through minefields or fortified positions — the most dangerous job in an assault.",
+     equipment:["Vallon VMH3 mine detector","Demolition charges (C4 / Pentolite)","Bangalore torpedo","R4 personal weapon","Body armour + helmet","PPE gloves + visor","Mine probe + marking kit"]},
+    {name:"Parabat Stick (4-man)",branch:"SA Army Special Forces",icon:"🪂",size:"4-man stick",color:"#a78bfa",
+     desc:"The 45 Parachute Regiment deploys in 4-man 'sticks' — the airborne equivalent of a fire team. Inserted by C-130 or Oryx, they are the SA Army's rapid intervention force, able to deploy anywhere in Africa within hours.",
+     equipment:["T-10D / reserve chute","R4 + 6 magazines","Jump kit (waterproof)","Radio — personal VHF","Personal first aid kit","72hr assault ration","Entrenching tool","Jump boots"]},
+  ],
+  "SECTION":[
+    {name:"Recce Section (4-man)",branch:"SA Army Special Forces",icon:"🔭",size:"4 operators",color:"#a78bfa",
+     desc:"A 4-man Recce team from 4 or 5 SF Regiment can insert by parachute, vehicle, or on foot. Operating in the bush for up to 21 days, they avoid all contact and report enemy movements to battalion HQ via SATCOM.",
+     equipment:["R4 (suppressed)","NTW-20 anti-material rifle","Full SATCOM comms kit","Night vision devices (pair)","Ghillie suits (all 4)","21-day minimal ration pack","Covert observation post kit","Medical kit (trauma)"]},
+    {name:"SAAF Ground Support Section",branch:"SA Air Force",icon:"✈️",size:"8-10 SAAF personnel",color:"#38bdf8",
+     desc:"Air Force ground crew sections are deployed forward to expeditionary airstrips during operations. They refuel, rearm, and service Rooivalk or Oryx helicopters operating in the field — enabling sustained air support 200km from an air force base.",
+     equipment:["Fuel bowser (1500L)","Aircraft maintenance toolkit","Arming equipment (30mm rounds, rockets)","Field generators","VHF air-ground radio","R4 personal weapons (all)","Protective equipment"]},
+    {name:"SAN Boarding Section",branch:"SA Navy",icon:"⚓",size:"8 operators",color:"#06b6d4",
+     desc:"The South African Navy trains boarding sections for maritime law enforcement and anti-piracy operations. Deployed from frigates by RHIB, they board and search suspect vessels — a skill used extensively in the Mozambique Channel.",
+     equipment:["SA Navy assault kit","Glock 17 / R4 carbine","Body armour (NIJ III)","RHIB navigation kit","Restraint equipment","SA Navy communications radio","Night vision (limited)","Search equipment"]},
+    {name:"SAEC Demolitions Section",branch:"SA Army Engineers",icon:"💣",size:"8-10 sappers",color:"#22d3ee",
+     desc:"An engineers demolitions section can breach fortified positions, clear minefields, or destroy enemy bridges and logistics nodes. Attached to infantry during offensive operations, they are the key to unlocking defended positions.",
+     equipment:["C4 demolition charges (bulk)","Detonators + det cord","Bangalore torpedoes x4","Vallon mine detectors x3","R4 + body armour (all)","Engineer officer radio","Mine marking equipment","Combat earth moving tools"]},
+    {name:"Pathfinder Section (45 Para)",branch:"SA Army Special Forces",icon:"🪂",size:"6-8 operators",color:"#a78bfa",
+     desc:"45 Parachute Regiment's Pathfinders insert 24 hours ahead of the main airborne force to mark drop zones, assess enemy positions, and guide the C-130 formations. One of the most demanding roles in the SA Army.",
+     equipment:["SATCOM radio (drop zone comms)","Strobe lights + VS-17 panels (DZ marking)","Full parachute kit","NVDs for night DZ operations","R4 + suppressor","Covert recon kit","72hr assault ration"]},
+  ],
+  "PLATOON":[
+    {name:"Recce Platoon (5 SF Regt)",branch:"SA Army Special Forces",icon:"🔭",size:"~20 operators",color:"#a78bfa",
+     desc:"5 Special Forces Regiment at Phalaborwa fields the SA Army's primary bushveld reconnaissance element. Platoon-strength Recce deployments have shaped SANDF intelligence in the DRC and Mozambique operations.",
+     equipment:["Full recce kit per operator","SATCOM + HF radio nets","NTW-20 rifles (2-3 per platoon)","Vehicles (unmarkered)","Drones (where available)","Medical trauma kit","Extended ration scale (21+ days)"]},
+    {name:"45 Para Platoon",branch:"SA Army Special Forces",icon:"🪂",size:"~33 airborne soldiers",color:"#a78bfa",
+     desc:"A 45 Para platoon can be airlifted by C-130BZ and dropped as a complete fighting unit. Used for rapid seizure of airstrips, VIP extraction, or reinforcing surrounded units — deployable anywhere in Africa within 6 hours of alert.",
+     equipment:["T-10D parachutes (full stick)","R4 per soldier + LMG (2x per section)","Mortars (60mm) carried in jump","SATCOM for airborne ops","Full section weapons scale","72hr assault rations (all)"]},
+    {name:"SAN Frigate Boarding Platoon",branch:"SA Navy",icon:"⚓",size:"~30 naval operators",color:"#06b6d4",
+     desc:"The Valour-class frigates each carry a boarding platoon for maritime operations. During Operation Copper (Mozambique Channel patrols), SAN boarding platoons intercepted vessels smuggling weapons and contraband to Mozambican insurgents.",
+     equipment:["RHIB fast boats (2x per frigate)","Body armour (maritime spec)","R4 carbines + shotguns","Night vision (maritime)","Restraint + search kit","SA Navy comms suite","Frigate ship-to-shore radio"]},
+    {name:"Gripen Forward Air Platoon",branch:"SA Air Force",icon:"✈️",size:"~15 SAAF + Army",color:"#38bdf8",
+     desc:"A forward air platoon coordinates Gripen C/D air support for ground forces. This unit embeds with infantry platoons during major operations, providing real-time targeting data to SAAF pilots for close air support missions.",
+     equipment:["Laser target designator (SOFLAM-type)","Encrypted SATCOM","Air picture tablet (ROVER)","R4 personal weapons","Body armour + helmet","Aviation frequency cards","Binoculars + spotting scope"]},
+    {name:"SAMHS Field Medical Platoon",branch:"SAMHS",icon:"⚕️",size:"~20 medics",color:"#f472b6",
+     desc:"A South African Military Health Service field medical platoon is attached during major exercises and operations. They establish a Regimental Aid Post (RAP) forward and manage casualty flow from point of wounding to surgical care.",
+     equipment:["Field operating kit (advanced)","Casevac vehicle (Land Rover or SAMIL)","Stretchers + vacuum splints","Plasma + IV fluids (bulk)","Controlled drugs (morphine, ketamine)","Portable X-ray (where available)","Casualty tracking system"]},
+  ],
+  "COMPANY":[
+    {name:"4 SF Regt Maritime Sqn",branch:"SA Army Special Forces",icon:"🤿",size:"~60 operators",color:"#a78bfa",
+     desc:"4 Special Forces Regiment at Langebaanweg fields SA's premier maritime special operations capability. Their company-equivalent squadron conducts underwater demolition, covert beach reconnaissance, and direct action from the sea.",
+     equipment:["Draeger LAR V rebreathers (full sqn)","Rigid Inflatable Boats (RIBS)","Explosive ordnance disposal kit","Underwater cameras + sensors","SATCOM + encrypted comms","Covert landing kit","Full dive medical capability"]},
+    {name:"45 Para Company",branch:"SA Army Special Forces",icon:"🪂",size:"~110 paratroopers",color:"#a78bfa",
+     desc:"45 Parachute Regiment's company-strength element can seize an airfield, establish a perimeter, and hold it for 72 hours before relief. The entire company drops simultaneously from multiple C-130BZ aircraft in a massed airborne assault.",
+     equipment:["C-130BZ transport aircraft (3-4 aircraft)","Full weapons scale (all soldiers)","Mortars + HMG (company level)","Jeep vehicles (airdropped where required)","Company signals suite","Medical section embedded","Extended ammo scale (72hr)"]},
+    {name:"SAN Frigate Company Group",branch:"SA Navy",icon:"⚓",size:"~150 naval crew",color:"#06b6d4",
+     desc:"A single Valour-class frigate operates as a company-equivalent combat unit at sea. Equipped with Super Lynx helicopters, Exocet missiles, and a 76mm gun, one frigate can dominate 200,000 km² of ocean and deny it to enemy shipping.",
+     equipment:["MBDA Exocet MM40 anti-ship missiles","Umkhonto SAM system (32 missiles)","OTO Melara 76mm main gun","Super Lynx helicopter (x1)","Torpedo tubes (2x triple mount)","Electronic warfare suite","SATCOM + encrypted naval comms"]},
+    {name:"SAAF Rooivalk Attack Sqn",branch:"SA Air Force",icon:"🚁",size:"~120 aircrew + ground",color:"#38bdf8",
+     desc:"The Rooivalk CSH (Combat Support Helicopter) is one of Africa's most capable attack helicopters. A Rooivalk company-equivalent squadron provides direct fire support, anti-armour capability, and armed reconnaissance for ground forces.",
+     equipment:["AH-2 Rooivalk CSH (8 aircraft)","ZT-35 Ingwe ATGMs (16 per aircraft)","20mm cannon (700rds per aircraft)","FLIR + laser targeting pod","Ground crew vehicles + fuel","Encrypted air-ground comms","Maintenance support company"]},
+    {name:"SA Army Engineers Assault Coy",branch:"SA Army Engineers",icon:"💣",size:"~100 field engineers",color:"#22d3ee",
+     desc:"An engineer assault company can bridge a 30-metre river gap, clear a minefield, or destroy a battalion's worth of enemy equipment in a single operation. During DRC deployments, SAEC companies built tactical bridges that opened supply routes for MONUSCO forces.",
+     equipment:["Eland Mk7 bridging system","Mine rollers + clearance vehicles","Assault boats","Bulk demolition stores","Engineer plant (graders, TLBs)","Full combat arms scale","Watercraft (rafts + boats)"]},
+    {name:"SAMHS Role 2 Medical Coy",branch:"SAMHS",icon:"⚕️",size:"~80 medical staff",color:"#f472b6",
+     desc:"A SAMHS Role 2 medical company is the first point of surgical care in the field. They establish a forward surgical team capable of performing life-saving surgery — laparotomy, thoracotomy — within 1 hour of wounding.",
+     equipment:["Field operating theatre (tent-based)","Anaesthesia machine (portable)","Blood bank (stored whole blood)","Surgical instrument sets","Casevac vehicles (4x)","Generator + lighting","ICU capacity (4 beds)","Dental support"]},
+  ],
+  "BATTALION":[
+    {name:"5 Special Forces Regiment",branch:"SA Army Special Forces",icon:"🔭",size:"~200 operators",color:"#a78bfa",
+     desc:"South Africa's elite deep infiltration unit. 5 SF Regt has deployed in the DRC, CAR, and Mozambique — often months before conventional forces arrive. Their intelligence shapes every major SANDF operational plan.",
+     equipment:["Full individual operator kit","Diverse vehicle fleet (unmarkered)","SATCOM + encrypted HF network","NTW-20 anti-material rifles","Aviation support (dedicated Oryx)","Extended ration + medical scale","Drone capability (tactical ISR)"]},
+    {name:"45 Parachute Regiment",branch:"SA Army Special Forces",icon:"🪂",size:"~500 paratroopers",color:"#a78bfa",
+     desc:"South Africa's premier airborne rapid reaction force. 45 Para can deploy a battalion-strength element anywhere in Africa within 12 hours of Presidential authorisation, using SAAF C-130BZ Hercules transport aircraft.",
+     equipment:["C-130BZ Hercules x6 (SAAF assigned)","Full battalion weapons scale","Vehicles (air-portable)","Artillery liaison element (forward)","Battalion SATCOM + comms","Medical support company","90-day sustainment plan"]},
+    {name:"SAN Frigate Task Group",branch:"SA Navy",icon:"⚓",size:"~600 naval crew",color:"#06b6d4",
+     desc:"Two Valour-class frigates and a Type 209 submarine form the SAN's primary task group — the battalion equivalent at sea. This group can dominate regional waters, enforce maritime blockades, and provide naval gunfire support to land forces.",
+     equipment:["2x Valour-class frigates (full weapon fit)","1x Type 209 submarine","Super Lynx helicopters (2x)","Exocet + Umkhonto missiles","Replenishment capability (SAS Drakensberg)","Maritime patrol aircraft coordination (19 Sqn)","Full electronic warfare suite"]},
+    {name:"17 Squadron SAAF",branch:"SA Air Force",icon:"✈️",size:"~150 aircrew/ground",color:"#38bdf8",
+     desc:"17 Squadron at AFB Hoedspruit operates the JAS 39 Gripen D multi-role fighter. One Gripen squadron provides air superiority, precision strike, and reconnaissance for the entire SANDF — able to reach any target in southern Africa within 90 minutes.",
+     equipment:["JAS 39 Gripen D x12 aircraft","A-Darter air-to-air missile (short range)","IRIS-T medium-range AAM","Denel Umbani PGB (precision bomb)","FLIR + recce pod","Buddy tanking capability","Electronic warfare suite"]},
+    {name:"4 Artillery Regiment",branch:"SA Army Artillery",icon:"💥",size:"~600 gunners",color:"#ef4444",
+     desc:"The SA Army's primary heavy fire support unit. 4 Regt operates the G5 155mm towed howitzer and the G6 self-propelled 155mm — both South African designed. The G6 can fire 3 rounds simultaneously in 'MRSI' mode and have all three land at the same time.",
+     equipment:["G6 Rhino 155mm SPG (self-propelled)","G5 155mm towed howitzer","ERFB-BB extended range rounds (40km+)","Artillery fire control computers","Ammunition trucks (bulk scale)","SAMIL 50 tractor vehicles","Meteorological station (weather data)"]},
+    {name:"1 Military Hospital",branch:"SAMHS",icon:"⚕️",size:"~600 medical staff",color:"#f472b6",
+     desc:"1 Military Hospital at Thaba Tshwane is the SANDF's primary tertiary care facility. It operates as a Role 4 hospital — the highest level of care available — and has deployed forward surgical teams to DRC, Mozambique, and the CAR.",
+     equipment:["Full surgical theatre x4","ICU capacity (20+ beds)","CT scanner + X-ray","Blood bank (full)","Psychiatric unit","Rehabilitation centre","Casevac coordination cell","Air medical crew (for MEDEVAC)"]},
+  ],
+};
+
+/* ─────────────────────────── UNITS DATA ─────────────────────────── */
 const UNITS = [
   {cat:"SA Army — Infantry",color:"#4ade80",units:[
     {n:"1 SA Infantry Battalion",loc:"Tempe, Free State",type:"BATTALION",size:"600–800 Soldiers",leader:"Lt Colonel",color:"#fb923c",r:"Light infantry framework, border safeguarding deployments (Op Corona)."},
@@ -168,24 +306,24 @@ const UNITS = [
     {n:"7 SA Infantry Battalion",loc:"Phalaborwa, Limpopo",type:"BATTALION",size:"600–800 Soldiers",leader:"Lt Colonel",color:"#fb923c",r:"Thick bushveld tracking operations and active northern border patrols."},
     {n:"8 SA Infantry Battalion",loc:"Upington, N. Cape",type:"BATTALION",size:"600–800 Soldiers",leader:"Lt Colonel",color:"#fb923c",r:"Mechanised desert infantry utilizing Ratel configurations."},
     {n:"9 SA Infantry Battalion",loc:"Mtubatuba, KZN",type:"BATTALION",size:"600–800 Soldiers",leader:"Lt Colonel",color:"#fb923c",r:"Motorized units optimized for coastal thickets and littoral environments."},
-    {n:"21 SA Infantry Battalion",loc:"Grahamstown, E. Cape",type:"BATTALION (RESERVE)",size:"400-600 Contingent",leader:"Lt Colonel (Res)",color:"#fb923c",r:"Part-time reserve infantry framework structurally identical to active battalions."},
+    {n:"21 SA Infantry Battalion",loc:"Grahamstown, E. Cape",type:"BATTALION (RESERVE)",size:"400-600 Contingent",leader:"Lt Colonel (Res)",color:"#fb923c",r:"Part-time reserve infantry framework."},
     {n:"22 SA Infantry Battalion",loc:"Cape Town, W. Cape",type:"BATTALION (RESERVE)",size:"400-600 Contingent",leader:"Lt Colonel (Res)",color:"#fb923c",r:"Strategic part-time provincial structural infantry replenishment asset."},
     {n:"23 SA Infantry Battalion",loc:"Durban, KZN",type:"BATTALION (RESERVE)",size:"400-600 Contingent",leader:"Lt Colonel (Res)",color:"#fb923c",r:"Regional part-time defensive asset supporting primary infantry structures."}
   ]},
   {cat:"SA Army — Armour",color:"#fb923c",units:[
-    {n:"Regiment Mooirivier",loc:"Potchefstroom, NW",type:"REGIMENT (BATTALION SCALE)",size:"~500 Heavy Crew",leader:"Lt Colonel / Armor Command",color:"#fb923c",r:"Primary heavy strike element operating Olifant Mk2 Main Battle Tanks."},
-    {n:"South African Irish Regiment",loc:"Cape Town",type:"REGIMENT (RESERVE Scale)",size:"~300 Armor Crew",leader:"Major / Lt Colonel (Res)",color:"#fb923c",r:"Reserve mechanized unit trained on armor mobilization strategies."},
-    {n:"Natal Mounted Rifles",loc:"Durban, KZN",type:"REGIMENT (RESERVE Scale)",size:"~300 Recon Crew",leader:"Major / Lt Colonel (Res)",color:"#fb923c",r:"Light armor formation focused on mobile vehicle-based reconnaissance."}
+    {n:"Regiment Mooirivier",loc:"Potchefstroom, NW",type:"REGIMENT",size:"~500 Heavy Crew",leader:"Lt Colonel",color:"#fb923c",r:"Primary heavy strike element operating Olifant Mk2 Main Battle Tanks."},
+    {n:"South African Irish Regiment",loc:"Cape Town",type:"REGIMENT (RESERVE)",size:"~300 Armor Crew",leader:"Major / Lt Colonel (Res)",color:"#fb923c",r:"Reserve mechanized unit trained on armor mobilization strategies."},
+    {n:"Natal Mounted Rifles",loc:"Durban, KZN",type:"REGIMENT (RESERVE)",size:"~300 Recon Crew",leader:"Major / Lt Colonel (Res)",color:"#fb923c",r:"Light armor formation focused on mobile vehicle-based reconnaissance."}
   ]},
   {cat:"SA Army — Artillery",color:"#ef4444",units:[
-    {n:"4 Artillery Regiment",loc:"Potchefstroom, NW",type:"REGIMENT (BATTALION SCALE)",size:"~600 Gunner Force",leader:"Lt Colonel / Fire Command",color:"#fb923c",r:"Heavy indirect fire core operating G5 towed & G6 self-propelled 155mm systems."},
-    {n:"14 Artillery Regiment",loc:"Tempe, Free State",type:"REGIMENT (RESERVE Scale)",size:"~300 Fire Crew",leader:"Major (Res)",color:"#fb923c",r:"Strategic backup fire teams coordinating modular field artillery scales."},
-    {n:"10 Anti-Aircraft Regiment",loc:"Tempe",type:"REGIMENT (BATTALION SCALE)",size:"~500 Shield Force",leader:"Lt Colonel / Air Def Command",color:"#fb923c",r:"Tactical air defense asset managing surface-to-air tracking networks."}
+    {n:"4 Artillery Regiment",loc:"Potchefstroom, NW",type:"REGIMENT",size:"~600 Gunner Force",leader:"Lt Colonel",color:"#fb923c",r:"Heavy indirect fire core operating G5 towed & G6 self-propelled 155mm systems."},
+    {n:"14 Artillery Regiment",loc:"Tempe, Free State",type:"REGIMENT (RESERVE)",size:"~300 Fire Crew",leader:"Major (Res)",color:"#fb923c",r:"Strategic backup fire teams coordinating modular field artillery scales."},
+    {n:"10 Anti-Aircraft Regiment",loc:"Tempe",type:"REGIMENT",size:"~500 Shield Force",leader:"Lt Colonel",color:"#fb923c",r:"Tactical air defense asset managing surface-to-air tracking networks."}
   ]},
   {cat:"SA Army — Special Forces",color:"#a78bfa",units:[
-    {n:"4 Special Forces Regiment",loc:"Langebaanweg, W. Cape",type:"RECIPIENT OPERATIONAL FORCE",size:"~150 operators (Compacted)",leader:"Colonel / Commander SF",color:"#f472b6",r:"Highly compact elite maritime specialists running covert recce and diving strikes."},
-    {n:"5 Special Forces Regiment",loc:"Phalaborwa, Limpopo",type:"RECIPIENT OPERATIONAL FORCE",size:"~200 operators (Compacted)",leader:"Colonel / Commander SF",color:"#f472b6",r:"Elite deep infiltration bushveld reconnaissance and unconventional direct action teams."},
-    {n:"45 Parachute Regiment",loc:"Tempe, Free State",type:"REGIMENT (BATTALION SCALE)",size:"~500 Airborne Force",leader:"Lt Colonel / Airborne Lead",color:"#fb923c",r:"Rapid airborne interception component trained for combat drop deployments."}
+    {n:"4 Special Forces Regiment",loc:"Langebaanweg, W. Cape",type:"OPERATIONAL FORCE",size:"~150 operators",leader:"Colonel / Commander SF",color:"#f472b6",r:"Elite maritime specialists running covert recce and diving strikes."},
+    {n:"5 Special Forces Regiment",loc:"Phalaborwa, Limpopo",type:"OPERATIONAL FORCE",size:"~200 operators",leader:"Colonel / Commander SF",color:"#f472b6",r:"Elite deep infiltration bushveld reconnaissance and unconventional direct action teams."},
+    {n:"45 Parachute Regiment",loc:"Tempe, Free State",type:"REGIMENT",size:"~500 Airborne Force",leader:"Lt Colonel / Airborne Lead",color:"#fb923c",r:"Rapid airborne interception component trained for combat drop deployments."}
   ]},
   {cat:"SA Army — Engineers",color:"#22d3ee",units:[
     {n:"1 Engineer Support Regiment",loc:"Tempe, Free State",type:"BATTALION STRUCT",size:"~500 Field Engineers",leader:"Lt Colonel",color:"#fb923c",r:"Combat infrastructure engineers managing tactical bridging, counter-mobility and structural defense."},
@@ -193,25 +331,25 @@ const UNITS = [
   ]},
   {cat:"SA Army — Signals",color:"#818cf8",units:[
     {n:"7 Signal Regiment",loc:"Thaba Tshwane, Gauteng",type:"BATTALION STRUCT",size:"~400 Comms Experts",leader:"Lt Colonel",color:"#fb923c",r:"Manages strategic backbone theater communications and electronic warfare architectures."},
-    {n:"8 Signal Regiment",loc:"Tempe, Free State",type:"PLATOON / DETACHMENT GROUPS",size:"Distributed Elements",leader:"Captain / Lieutenants",color:"#818cf8",r:"Dispatches modular communications elements directly to field command hubs."}
+    {n:"8 Signal Regiment",loc:"Tempe, Free State",type:"PLATOON GROUPS",size:"Distributed Elements",leader:"Captain / Lieutenants",color:"#818cf8",r:"Dispatches modular communications elements directly to field command hubs."}
   ]},
-  {cat:"SA Army Service Corps — Logistics",color:"#f59e0b",units:[
+  {cat:"SA Army Service Corps",color:"#f59e0b",units:[
     {n:"1 Service Battalion",loc:"Tempe, Free State",type:"BATTALION STRUCT",size:"~700 Support Staff",leader:"Lt Colonel",color:"#fb923c",r:"Heavy regional echelon managing bulk distribution of ammunition scales, heavy maintenance, and fuel lines."},
     {n:"2 Service Battalion",loc:"Wallmansthal, Gauteng",type:"BATTALION STRUCT",size:"~600 Logistics Staff",leader:"Lt Colonel",color:"#fb923c",r:"Main supply chain engine running major line-haul convoys and ration packs distributions."},
-    {n:"Technical Services Corps",loc:"Thaba Tshwane",type:"BRIGADE-SCALE COMPONENT",size:"Wide Technical Matrix",leader:"Colonel / Director Tech",color:"#fb923c",r:"Echelon repair pools tasked with bringing heavy armour and transport assets back online."},
-    {n:"Ammunition Depot",loc:"Tempe + Wallmansthal",type:"SECURE WAREHOUSE STRUCTURE",size:"Staff Contingents",leader:"Major / Depot Master",color:"#f472b6",r:"Tightly audited nodes handling verification, distribution, and storage of live armaments scales."}
+    {n:"Technical Services Corps",loc:"Thaba Tshwane",type:"BRIGADE-SCALE",size:"Wide Technical Matrix",leader:"Colonel / Director Tech",color:"#fb923c",r:"Echelon repair pools tasked with bringing heavy armour and transport assets back online."},
+    {n:"Ammunition Depot",loc:"Tempe + Wallmansthal",type:"SECURE WAREHOUSE",size:"Staff Contingents",leader:"Major / Depot Master",color:"#f472b6",r:"Tightly audited nodes handling verification, distribution, and storage of live armaments scales."}
   ]},
   {cat:"SA Air Force",color:"#38bdf8",units:[
-    {n:"2 Squadron",loc:"AFB Waterkloof, Gauteng",type:"SQUADRON (COMPANY SCALE)",size:"~120 flight/ground crew",leader:"Lieutenant Colonel / Flight Lead",color:"#f472b6",r:"Operates VIP air systems including regional Boeing and Falcon jets."},
-    {n:"17 Squadron",loc:"AFB Hoedspruit, Limpopo",type:"SQUADRON (COMPANY SCALE)",size:"~150 specialists",leader:"Lieutenant Colonel / Flight Lead",color:"#f472b6",r:"Frontline intercept assets piloting JAS 39 Gripen multi-role combat aircraft."},
-    {n:"19 Squadron",loc:"AFB Langebaanweg, W. Cape",type:"SQUADRON (COMPANY SCALE)",size:"~100 specialists",leader:"Lieutenant Colonel",color:"#f472b6",r:"Maritime tracking assets operating C-47TP turbo conversion aircraft."},
-    {n:"35 Squadron",loc:"AFB Waterkloof",type:"SQUADRON (COMPANY SCALE)",size:"~180 crew assets",leader:"Lieutenant Colonel",color:"#f472b6",r:"Strategic logistics air transport handling long-haul C-130BZ aircraft networks."},
-    {n:"87 Helicopter Flying School",loc:"AFB Bloemspruit",type:"TRAINING SQUADRON SCALE",size:"~130 Instructors/Students",leader:"Lieutenant Colonel",color:"#f472b6",r:"Advanced rotary hub instructing pilots on heavy Oryx and Rooivalk combat tactics."}
+    {n:"2 Squadron",loc:"AFB Waterkloof, Gauteng",type:"SQUADRON",size:"~120 flight/ground crew",leader:"Lieutenant Colonel",color:"#f472b6",r:"Operates VIP air systems including regional Boeing and Falcon jets."},
+    {n:"17 Squadron",loc:"AFB Hoedspruit, Limpopo",type:"SQUADRON",size:"~150 specialists",leader:"Lieutenant Colonel",color:"#f472b6",r:"Frontline intercept assets piloting JAS 39 Gripen multi-role combat aircraft."},
+    {n:"19 Squadron",loc:"AFB Langebaanweg, W. Cape",type:"SQUADRON",size:"~100 specialists",leader:"Lieutenant Colonel",color:"#f472b6",r:"Maritime tracking assets operating C-47TP turbo conversion aircraft."},
+    {n:"35 Squadron",loc:"AFB Waterkloof",type:"SQUADRON",size:"~180 crew assets",leader:"Lieutenant Colonel",color:"#f472b6",r:"Strategic logistics air transport handling long-haul C-130BZ aircraft networks."},
+    {n:"87 Helicopter Flying School",loc:"AFB Bloemspruit",type:"TRAINING SQUADRON",size:"~130 Instructors/Students",leader:"Lieutenant Colonel",color:"#f472b6",r:"Advanced rotary hub instructing pilots on heavy Oryx and Rooivalk combat tactics."}
   ]},
   {cat:"SA Navy",color:"#06b6d4",units:[
-    {n:"SAS Simonsberg (Frigate Squadron)",loc:"Simon's Town, W. Cape",type:"FLOTILLA (COMPANY/BATTALION HYBRID)",size:"~150 per hull crew",leader:"Captain (SAN) / Commander",color:"#f472b6",r:"Commands surface combat capability aboard Valour-class MEKO A-200 guided missile frigates."},
-    {n:"SAS Diamant (Submarine Flotilla)",loc:"Simon's Town, W. Cape",type:"FLOTILLA (COMPANY SCALE)",size:"~45 deep crew per hull",leader:"Commander (SAN)",color:"#f472b6",r:"Sub-surface stealth strike component operating Type 209/1400 diesel-electric systems."},
-    {n:"SAS Protea",loc:"Simon's Town",type:"VESSEL SPECIFIC DETACHMENT",size:"~100 specialist crew",leader:"Commander (SAN)",color:"#f472b6",r:"Specialized survey asset mapping bathymetry data for defense deployment fleets."}
+    {n:"SAS Simonsberg (Frigate Squadron)",loc:"Simon's Town, W. Cape",type:"FLOTILLA",size:"~150 per hull crew",leader:"Captain (SAN) / Commander",color:"#f472b6",r:"Commands surface combat capability aboard Valour-class MEKO A-200 guided missile frigates."},
+    {n:"SAS Diamant (Submarine Flotilla)",loc:"Simon's Town, W. Cape",type:"FLOTILLA",size:"~45 deep crew per hull",leader:"Commander (SAN)",color:"#f472b6",r:"Sub-surface stealth strike component operating Type 209/1400 diesel-electric systems."},
+    {n:"SAS Protea",loc:"Simon's Town",type:"DETACHMENT",size:"~100 specialist crew",leader:"Commander (SAN)",color:"#f472b6",r:"Specialized survey asset mapping bathymetry data for defense deployment fleets."}
   ]},
   {cat:"SA Military Health Service",color:"#f472b6",units:[
     {n:"1 Military Hospital",loc:"Thaba Tshwane, Gauteng",type:"REGIONAL CLINICAL CENTER",size:"Large Medical Matrix",leader:"Brigadier General / Colonel",color:"#fb923c",r:"Primary tertiary medical infrastructure handling critical polytrauma care and evacuation steps."},
@@ -221,34 +359,186 @@ const UNITS = [
   ]},
 ];
 
-const DYK = {
-  "FIRE TEAM":[
-    {icon:"🎯",note:"The Team Leader personally draws ammo from the armoury and reconciles every round on return. A missing round requires a written explanation — there is no such thing as 'lost ammo' in the SANDF."},
-    {icon:"🔫",note:"The LMG Gunner carries roughly 12kg in ammunition alone. The assistant gunner (a rifleman) carries an extra 400 rounds. That's two people just managing firepower for the team."},
-    {icon:"💥",note:"Each 40mm grenade round is individually serialised and logged. The Grenadier must account for every HE, smoke, and illumination round — before and after every patrol."},
-  ],
-  "SECTION":[
-    {icon:"⭐",note:"The Section Commander is accountable for all 8-10 weapons in the section. Before handback to the armoury, every weapon is inspected barrel-to-stock. A single defect not noted beforehand becomes the Section Comd's liability."},
-    {icon:"🧹",note:"After every live fire exercise, a cleaning parade is called. No soldier leaves the range until every weapon is inspected and signed off by the Section Commander."},
-    {icon:"🔐",note:"Weapons are stored in a locked armoury. No weapon leaves without a signature. Every movement — issue and return — is logged. The armoury is audited without notice."},
-  ],
-  "PLATOON":[
-    {icon:"🛡️",note:"The Platoon Sergeant manages the ammunition register. Every round issued is recorded. Every round returned is counted. Unexplained shortages trigger a Board of Inquiry."},
-    {icon:"📡",note:"If the Signaller's radio fails during an operation, the Runner physically carries written messages between units. Comms must never be fully lost — this is why both roles exist in the same platoon."},
-    {icon:"⚕️",note:"The Medic holds controlled substances (morphine). Each ampoule is logged by serial number. A missing ampoule is a criminal investigation — not just disciplinary. Morphine is one of the most tightly controlled items in the army."},
-  ],
-  "COMPANY":[
-    {icon:"🔰",note:"The CSM holds keys to the company store. Every item — from body armour to vehicles — is signed in and out personally. The CSM is the last line of equipment accountability in the company."},
-    {icon:"🦅",note:"The Company Commander signs for equipment worth tens of millions of Rands. Loss or damage without a valid Board of Inquiry finding can result in financial recovery from the officer's own salary."},
-    {icon:"💣",note:"Support weapons (mortars, HMG) are held at company level but tasked forward to platoons when needed. Maintenance responsibility stays with the support weapons det — not the platoon they're attached to."},
-  ],
-  "BATTALION":[
-    {icon:"👑",note:"The RSM's word on standards and discipline is final within the battalion. Even officers are expected to meet the RSM's standards on parade. A weak RSM means a poorly disciplined battalion — CO's know this."},
-    {icon:"⚜️",note:"The CO signs for the entire battalion's equipment scale — weapons, vehicles, radios, stores. This is re-signed during every annual G4 equipment inspection. Discrepancies are formally investigated."},
-    {icon:"🔍",note:"The Intelligence Officer briefs the CO every morning with a SITREP. Before any operation, the IO produces a full intelligence estimate (the 'orders process'). No operation is authorised without it."},
-  ],
-};
+/* ─────────────────────────── TYPING DYK COMPONENT ─────────────────────────── */
+function TypingDYK({level}) {
+  const facts = DYK[level] || [];
+  const [factIdx, setFactIdx] = useState(0);
+  const [displayed, setDisplayed] = useState("");
+  const [typing, setTyping] = useState(true);
+  const [phase, setPhase] = useState("typing"); // typing | hold | erasing
+  const timerRef = useRef(null);
 
+  useEffect(() => {
+    setFactIdx(0);
+    setDisplayed("");
+    setPhase("typing");
+  }, [level]);
+
+  useEffect(() => {
+    if (!facts.length) return;
+    const full = facts[factIdx].note;
+    clearTimeout(timerRef.current);
+
+    if (phase === "typing") {
+      if (displayed.length < full.length) {
+        timerRef.current = setTimeout(() => {
+          setDisplayed(full.slice(0, displayed.length + 1));
+        }, 18);
+      } else {
+        timerRef.current = setTimeout(() => setPhase("hold"), 3500);
+      }
+    } else if (phase === "hold") {
+      timerRef.current = setTimeout(() => setPhase("erasing"), 800);
+    } else if (phase === "erasing") {
+      if (displayed.length > 0) {
+        timerRef.current = setTimeout(() => {
+          setDisplayed(displayed.slice(0, -2));
+        }, 8);
+      } else {
+        const next = (factIdx + 1) % facts.length;
+        setFactIdx(next);
+        setPhase("typing");
+      }
+    }
+    return () => clearTimeout(timerRef.current);
+  }, [phase, displayed, factIdx, facts]);
+
+  if (!facts.length) return null;
+  const cur = facts[factIdx];
+  const progress = (factIdx / facts.length) * 100 + (displayed.length / (cur.note.length || 1)) * (100 / facts.length);
+
+  return (
+    <div style={{marginTop:20,background:"#080810",border:"1px solid #1f2937",borderLeft:"3px solid #22d3ee",borderRadius:2,padding:"14px 16px",position:"relative",overflow:"hidden"}}>
+      {/* progress bar */}
+      <div style={{position:"absolute",top:0,left:0,height:2,background:"#22d3ee33",width:"100%"}}>
+        <div style={{height:"100%",background:"#22d3ee",width:`${progress}%`,transition:"width 0.1s"}}/>
+      </div>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <div style={{fontSize:9,letterSpacing:3,color:"#22d3ee"}}>● DID YOU KNOW</div>
+          <div style={{fontSize:18}}>{cur.icon}</div>
+        </div>
+        <div style={{display:"flex",gap:4}}>
+          {facts.map((_,i)=>(
+            <div key={i} onClick={()=>{setFactIdx(i);setDisplayed("");setPhase("typing");}} style={{
+              width: i===factIdx ? 14:6,height:6,borderRadius:3,
+              background:i===factIdx?"#22d3ee":"#374151",cursor:"pointer",transition:"all 0.2s"
+            }}/>
+          ))}
+        </div>
+      </div>
+      <div style={{fontSize:11,color:"#d1d5db",lineHeight:1.8,minHeight:52}}>
+        {displayed}<span className="cursor-blink"/>
+      </div>
+      <div style={{marginTop:8,fontSize:8,color:"#374151",letterSpacing:1}}>{factIdx+1} / {facts.length} FACTS · AUTO CYCLES</div>
+    </div>
+  );
+}
+
+/* ─────────────────────────── SPECIAL UNITS SLIDER ─────────────────────────── */
+function SpecialUnitsSlider({level}) {
+  const units = SPECIAL_UNITS[level] || [];
+  const [idx, setIdx] = useState(0);
+  const [dragStart, setDragStart] = useState(null);
+  const [offset, setOffset] = useState(0);
+  const [hintShown, setHintShown] = useState(false);
+
+  useEffect(() => { setIdx(0); setOffset(0); }, [level]);
+
+  const go = (dir) => {
+    setIdx(i => Math.max(0, Math.min(units.length-1, i+dir)));
+    setOffset(0);
+  };
+
+  const handleTouchStart = (e) => setDragStart(e.touches[0].clientX);
+  const handleTouchEnd = (e) => {
+    if (dragStart === null) return;
+    const diff = dragStart - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 40) go(diff > 0 ? 1 : -1);
+    setDragStart(null);
+  };
+  const handleMouseDown = (e) => setDragStart(e.clientX);
+  const handleMouseUp = (e) => {
+    if (dragStart === null) return;
+    const diff = dragStart - e.clientX;
+    if (Math.abs(diff) > 40) go(diff > 0 ? 1 : -1);
+    setDragStart(null);
+  };
+
+  if (!units.length) return null;
+  const u = units[idx];
+  const branchColor = BRANCH_COLORS[u.branch] || "#9ca3af";
+
+  return (
+    <div style={{marginTop:16}}>
+      <div style={{fontSize:9,letterSpacing:3,color:"#374151",marginBottom:10,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <span>◆ SPECIAL UNITS ATTACHED TO THIS LEVEL</span>
+        <span style={{fontSize:8,color:"#4b5563"}}>← SWIPE →</span>
+      </div>
+      <div
+        style={{userSelect:"none",cursor:"grab",touchAction:"pan-y"}}
+        onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}
+        onMouseDown={handleMouseDown} onMouseUp={handleMouseUp}
+      >
+        <div className="fade-in" key={`${level}-${idx}`} style={{
+          background:"#08080f",border:`1px solid ${branchColor}44`,
+          borderTop:`3px solid ${branchColor}`,borderRadius:2,padding:"14px 16px",
+        }}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10,flexWrap:"wrap",gap:6}}>
+            <div style={{display:"flex",gap:10,alignItems:"center"}}>
+              <div style={{fontSize:28}}>{u.icon}</div>
+              <div>
+                <div style={{fontSize:12,fontWeight:700,color:"#fff",letterSpacing:1}}>{u.name}</div>
+                <div style={{marginTop:3}}>
+                  <span className="branch-badge" style={{background:branchColor+"22",color:branchColor,border:`1px solid ${branchColor}55`}}>
+                    {u.branch}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div style={{fontSize:9,color:branchColor,background:branchColor+"11",padding:"4px 8px",border:`1px solid ${branchColor}33`,borderRadius:2}}>
+              ▪ {u.size}
+            </div>
+          </div>
+          <div style={{fontSize:10,color:"#9ca3af",lineHeight:1.8,marginBottom:12,borderBottom:"1px solid #1f2937",paddingBottom:12}}>
+            {u.desc}
+          </div>
+          <div>
+            <div style={{fontSize:9,letterSpacing:2,color:branchColor,marginBottom:8,fontWeight:700}}>KEY EQUIPMENT</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:4}}>
+              {u.equipment.map((e,i)=>(
+                <div key={i} style={{fontSize:9,color:"#6b7280",background:"#111119",border:`1px solid #1f2937`,padding:"3px 7px",borderRadius:2,lineHeight:1.5}}>
+                  {e}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+      {/* dots nav */}
+      <div className="dot-nav">
+        {units.map((_,i)=>(
+          <span key={i} className={i===idx?"active":""} onClick={()=>setIdx(i)}
+            style={{width:i===idx?14:6,height:6,borderRadius:3,background:i===idx?BRANCH_COLORS[units[i].branch]||"#22d3ee":"#374151",cursor:"pointer",transition:"all 0.2s",display:"inline-block"}}
+          />
+        ))}
+      </div>
+      {/* prev/next buttons */}
+      <div style={{display:"flex",justifyContent:"center",gap:8,marginTop:8}}>
+        <button onClick={()=>go(-1)} disabled={idx===0} style={{
+          background:"transparent",border:"1px solid #1f2937",color:idx===0?"#1f2937":"#9ca3af",
+          padding:"4px 12px",cursor:idx===0?"default":"pointer",fontSize:10,borderRadius:2,
+        }}>◀ PREV</button>
+        <button onClick={()=>go(1)} disabled={idx===units.length-1} style={{
+          background:"transparent",border:"1px solid #1f2937",color:idx===units.length-1?"#1f2937":"#9ca3af",
+          padding:"4px 12px",cursor:idx===units.length-1?"default":"pointer",fontSize:10,borderRadius:2,
+        }}>NEXT ▶</button>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────── SOLDIER COMPONENTS ─────────────────────────── */
 function SoldierDot({rk, size=28, showLabel=true, onSel}) {
   const d = SD[rk];
   if (!d) return null;
@@ -373,24 +663,7 @@ function Bn({onSel}) {
   );
 }
 
-function DYKCards({level}) {
-  const notes = DYK[level]||[];
-  if (!notes.length) return null;
-  return (
-    <div style={{marginTop:20}}>
-      <div style={{fontSize:9,letterSpacing:3,color:"#374151",marginBottom:10,textAlign:"center"}}>● DID YOU KNOW ●</div>
-      <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-        {notes.map((n,i)=>(
-          <div key={i} style={{flex:"1 1 220px",background:"#0f0f1a",border:"1px solid #1f2937",borderLeft:"3px solid #374151",padding:"10px 12px"}}>
-            <div style={{fontSize:18,marginBottom:6}}>{n.icon}</div>
-            <div style={{fontSize:10,color:"#6b7280",lineHeight:1.8}}>{n.note}</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
+/* ─────────────────────────── SHEET ─────────────────────────── */
 function Sheet({rk, onClose}) {
   if (!rk) return null;
   const d = SD[rk]; if (!d) return null;
@@ -436,6 +709,7 @@ function Sheet({rk, onClose}) {
   );
 }
 
+/* ─────────────────────────── DRAWER ─────────────────────────── */
 function Drawer({open,onClose}) {
   const [exp,setExp] = useState({});
   const tog = c => setExp(p=>({...p,[c]:!p[c]}));
@@ -460,9 +734,7 @@ function Drawer({open,onClose}) {
           <span style={{color:"#f472b6"}}>■ Pink = Coy/Squadron Size</span> (~110)<br/>
           <span style={{color:"#818cf8"}}>■ Purple = Platoon Scale</span> (~33)
         </div>
-        
-        {/* Scrollable containment box for the node tree list to preserve room for the bottom action element */}
-        <div style={{flexGrow:1, overflowY:"auto"}}>
+        <div style={{flexGrow:1,overflowY:"auto"}}>
           {UNITS.map((cat,i)=>(
             <div key={i} style={{borderTop:"1px solid #111"}}>
               <button onClick={()=>tog(cat.cat)} style={{
@@ -494,16 +766,14 @@ function Drawer({open,onClose}) {
             </div>
           ))}
         </div>
-
-        {/* NEW: Giant Strategic Map Link Button at base of list tree */}
-        <div style={{borderTop:"1px solid #1f2937", background:"#0a0a0f"}}>
+        <div style={{borderTop:"1px solid #1f2937",background:"#0a0a0f"}}>
           <a href="history.html" className="giant-map-btn">
-            <span><i class="fa-solid fa-timeline" style={{marginRight:"8px"}}></i> Timeline </span>
-            <i class="fa-solid fa-chevron-up"></i>
+            <span><i className="fa-solid fa-timeline" style={{marginRight:"8px"}}></i> Timeline</span>
+            <i className="fa-solid fa-chevron-up"></i>
           </a>
           <a href="map.html" className="giant-map-btn">
-            <span><i class="fa-solid fa-map-location-dot" style={{marginRight:"8px"}}></i> Launch Operational Map</span>
-            <i class="fa-solid fa-chevron-right"></i>
+            <span><i className="fa-solid fa-map-location-dot" style={{marginRight:"8px"}}></i> Launch Operational Map</span>
+            <i className="fa-solid fa-chevron-right"></i>
           </a>
         </div>
       </div>
@@ -511,6 +781,7 @@ function Drawer({open,onClose}) {
   );
 }
 
+/* ─────────────────────────── MAIN APP ─────────────────────────── */
 const LVLS=[
   {label:"FIRE TEAM",short:"FT",s:"4",color:"#4ade80"},
   {label:"SECTION",short:"SEC",s:"8–10",color:"#22d3ee"},
@@ -589,8 +860,13 @@ function App() {
         {view==="BATTALION" && <Bn onSel={onSel}/>}
       </div>
 
-      <DYKCards level={view}/>
+      {/* TYPING DYK */}
+      <TypingDYK level={view}/>
 
+      {/* SPECIAL UNITS SLIDER */}
+      <SpecialUnitsSlider level={view}/>
+
+      {/* level nav */}
       <div style={{display:"flex",alignItems:"center",justifyContent:"center",flexWrap:"wrap",marginTop:24,gap:0}}>
         {LVLS.map((l,i)=>(
           <div key={l.label} style={{display:"flex",alignItems:"center"}}>
