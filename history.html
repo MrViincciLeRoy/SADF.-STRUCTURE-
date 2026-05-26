@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SANDF Evolutionary Timeline</title>
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#060609;color:#e2e8f0;font-family:'Courier New',monospace}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#111}::-webkit-scrollbar-thumb{background:#333}
+.fade-in{animation:fadeIn .3s ease-out}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* Tactical back link */
+.giant-map-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: calc(100% - 24px);
+  margin: 16px 12px 24px 12px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #2c1810 0%, #070a12 100%);
+  border: 1px solid #fb923c;
+  border-radius: 2px;
+  color: #ffffff;
+  text-decoration: none;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(251, 146, 60, 0.1);
+}
+.giant-map-btn:hover {
+  background: #fb923c;
+  color: #060609;
+  box-shadow: 0 0 15px rgba(251, 146, 60, 0.4);
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState } = React;
+
+const TIMELINE_DATA = [
+  {
+    era: "MODERN INTEGRATION & SANDF CORE",
+    date: "1994 - PRESENT",
+    title: "Operation Integration & Structural Standardization",
+    color: "#4ade80",
+    icon: "🇿🇦",
+    context: "The birth of the South African National Defence Force (SANDF). Following democratic elections, a massive structural consolidation fused adversarial forces into a unified national doctrine.",
+    forces: ["SADF (Regulars/Reserves)", "MK (Umkhonto we Sizwe)", "APLA (Azanian People's Liberation Army)", "TBVC Homeland Forces (Transkei, Bophuthatswana, Venda, Ciskei)"],
+    tactics: "Shift from aggressive cross-border conventional operations to regional peace support missions under UN and AU mandates, stabilization, and internal border safeguarding (Op Corona).",
+    weapons: "Standardization of the Vektor R4/R5 5.56mm systems, integration of mechanized platforms (Ratel, Casspir) into peacekeeping operations, and maintenance of specialized air/naval tracking setups.",
+    legacy: "Directly established the modern 4-man fire team and section matrices seen today. Merged British-derived staff models with local bush warfare logistics, crafting highly autonomous low-level commands."
+  },
+  {
+    era: "THE SOUTH AFRICAN BORDER WAR",
+    date: "1966 - 1989",
+    title: "Asymmetric Bush Warfare & Deep Mechanized Strikes",
+    color: "#fb923c",
+    icon: "🌵",
+    context: "A protracted conflict spanning South West Africa (Namibia) and southern Angola. Fighting against SWAPO insurgents and conventional Angolan/Cuban brigades forced rapid shifts in design.",
+    forces: ["SADF Conventional & Special Forces", "South West Africa Territorial Force (SWATF)", "PLAN (SWAPO Wing)", "FAPLA (Angolan Regulars)", "Cuban Expeditionary Forces"],
+    tactics: "Highly fluid mechanized maneuvers over vast, sandy, mine-heavy environments. Pioneered rapid overland deep-penetration strikes, counter-insurgency tracking nets, and heavy emphasis on mine-resistant vehicle design.",
+    weapons: "Introduction of the R4 assault rifle (replacing the longer R1/FN FAL), Vektor SS-77 LMG, G5/G6 155mm long-range artillery, Ratel IFV, Casspir APC, and El land mine protection technologies.",
+    legacy: "Enforced the doctrine of supreme autonomy for sub-unit structures. The modern platoon structure explicitly retains the specialized support sections (60mm/81mm mortars and heavy machine guns) to match the fire ratios perfected in the Angolan bush."
+  },
+  {
+    era: "WORLD WARS & PARLIAMENTARY FORCES",
+    date: "1912 - 1945",
+    title: "The Union Defence Forces (UDF) & Global Deployments",
+    color: "#818cf8",
+    icon: "🌍",
+    context: "Established under the Defence Act of 1912 to unite former Boer and British forces. The UDF served with distinction across both global conflicts, adapting colonial defense models to mechanized global battles.",
+    forces: ["Union Defence Forces (UDF)", "Allied Expeditionary Commands"],
+    tactics: "Transitioned from horse-mounted mobile commandos to synchronized combined-arms structures. Deployed in North Africa (El Alamein), Italy, and East Africa, refining heavy artillery placement and mobile infantry operations.",
+    weapons: "Lee-Enfield .303 rifles, Vickers HMG, Bren light machine guns, early armored recon vehicles (Marmon-Herrington).",
+    legacy: "Cemented the formal military rank hierarchy (Privates, Corporals, Sergeants, Commissioned Officers) and the fundamental staff structure (G1-G4 administrative lines) still used within the SANDF matrix today."
+  },
+  {
+    era: "THE ANGLO-BOER WARS",
+    date: "1880 - 1902",
+    title: "Asymmetric Commando Tactics vs. Imperial Attrition",
+    color: "#22d3ee",
+    icon: "🐎",
+    context: "Two major conflicts pitting the independent Boer Republics (Transvaal and Orange Free State) against the British Empire, marking a massive turning point in modern infantry tactics.",
+    forces: ["Boer Commando Units", "British Imperial Forces"],
+    tactics: "The Boers rejected rigid formations, operating in loosely structured 'Commandos' that prioritized expert marksmanship, rapid mounted mobility, camouflage, and devastating ambush loops. British forces countered with scorched-earth policies and structural blockhouse defense lines.",
+    weapons: "Mauser 7x57mm bolt-action rifles (Boer), Lee-Metford / Lee-Enfield rifles (British), Maxim machine guns, and early Krupp field artillery.",
+    legacy: "Shocked global militaries into abandoning bright combat uniforms for khaki/neutral tones. Left behind the term 'Commando' and established the core South African tactical belief that small, highly flexible fire units utilizing decentralized command can successfully match vastly superior conventional forces."
+  },
+  {
+    era: "DEFENSIVE CONSOLIDATION & KING MOSHOESHOE",
+    date: "1820 - 1870",
+    title: "Mountain Fortifications & Adaptive Diplomacy",
+    color: "#a78bfa",
+    icon: "⛰️",
+    context: "Amid the regional upheavals of the Difaqane/Mfecane, King Moshoeshoe I synthesized scattered groups into a cohesive nation (Basotho), managing existential threats from expanding tribal powers and migrating Voortrekkers.",
+    forces: ["Basotho Defensive Confraternity"],
+    tactics: "Mastery of natural fortress topography (Thaba Bosiu). Utilizing sheer cliffs and elevated choke points to neutralize superior numbers, combined with highly coordinated cavalry harassment arrays and adaptive international diplomacy.",
+    weapons: "Traditional spears and clubs, rapidly upgraded via trade to European smoothbore muskets, horses, and captured field armaments.",
+    legacy: "Pioneered adaptive defensive fortification doctrines and early multi-domain threat management (combining unconventional warfare with diplomatic leverage), showcasing how geographical features can multiply the efficiency of a smaller defensive unit."
+  },
+  {
+    era: "THE MFECANE & THE ZULU MILITARY REVOLUTION",
+    date: "1816 - 1828",
+    title: "Shaka Zulu's Close-Quarter Doctrine & Tactical Synthesis",
+    color: "#ef4444",
+    icon: "🛡️",
+    context: "A period of intense institutional warfare and migration across Southern Africa. Shaka, monarch of the Zulu Kingdom, radically overhauled old ritualistic battle frameworks into an absolute total war mechanism.",
+    forces: ["The Zulu Impi Network"],
+    tactics: "The revolutionary *Impi Horns of the Buffalo* (*Izimpondo Zankomo*) formation: a dense center 'chest' pins the enemy, flanking 'horns' encircle and trap the perimeter, and a hidden 'loins' reserve stays back under central command to exploit weak points.",
+    weapons: "The *Iklwa* (a short, broad-bladed stabbing spear maximizing close-quarters lethality) replacing long throwing spears, and heavy ox-hide shields structurally integrated into hand-to-hand parrying drills.",
+    legacy: "Introduced strict standardization of equipment, mandatory physical conditioning arrays, and structured logistics chains (youth support groups carrying supplies). The *Horns of the Buffalo* remains a pristine historical manifestation of the tactical containment and flanking maneuvers drilled by modern SANDF infantry platoons."
+  },
+  {
+    era: "EARLIEST COLONIAL CLASHES & THE COMMANDO SYSTEM",
+    date: "1659 - 1799",
+    title: "The Dutch-Khoi Wars & Frontier Militia Formations",
+    color: "#f472b6",
+    icon: "⚓",
+    context: "The earliest recorded European-indigenous conflicts in South Africa. As the Dutch East India Company (VOC) expanded past the Cape Peninsula, structural resource clashes forced the creation of local armed paradigms.",
+    forces: ["Khoikhoi Resistance Coalitions", "VOC Soldiers & Local Settler Militias"],
+    tactics: "Khoikhoi units executed rapid cattle-raiding counter-offensives and fluid guerrilla attrition loops utilizing brush cover. The VOC and expanding frontier settlers countered by initializing the *Commando System*—highly mobile, civilian-conscripted horse units designed for tracking and swift reprisal strikes.",
+    weapons: "Traditional Khoikhoi composite bows, poisoned arrows, and fire-hardened lances; matched against Dutch matchlock and flintlock muskets.",
+    legacy: "Gave birth to the foundational *Commando system*—a decentralized, rapid-response militia model that defined South African military planning for over two centuries, demonstrating that local terrain mastery dictates tactical success."
+  }
+];
+
+function TimelineCard({ data, isSelected, onSelect }) {
+  return (
+    <div 
+      onClick={onSelect}
+      className="fade-in"
+      style={{
+        background: isSelected ? "#0d1527" : "#0f0f1a",
+        border: `1px solid ${isSelected ? data.color : "#1f2937"}`,
+        borderLeft: `4px solid ${data.color}`,
+        padding: "16px",
+        marginBottom: "16px",
+        cursor: "pointer",
+        borderRadius: "2px",
+        transition: "all 0.2s ease"
+      }}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+        <span style={{ fontSize: "9px", color: data.color, letterSpacing: "2px", fontWeight: "bold" }}>{data.era}</span>
+        <span style={{ fontSize: "10px", background: data.color + "22", color: data.color, padding: "2px 6px", borderRadius: "2px", fontWeight: "bold" }}>{data.date}</span>
+      </div>
+      
+      <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "4px" }}>
+        <span style={{ fontSize: "20px" }}>{data.icon}</span>
+        <h3 style={{ fontSize: "12px", color: "#fff", letterSpacing: "1px" }}>{data.title}</h3>
+      </div>
+
+      <p style={{ fontSize: "10px", color: "#9ca3af", marginTop: "8px", lineHeight: "1.6" }}>{data.context}</p>
+
+      {isSelected && (
+        <div style={{ marginTop: "14px", paddingTop: "12px", borderTop: "1px dashed #222" }} className="fade-in">
+          <div style={{ marginBottom: "10px" }}>
+            <span style={{ fontSize: "8px", color: data.color, letterSpacing: "1px", display: "block", fontWeight: "bold", marginBottom: "2px" }}>OPERATIONAL FORCES</span>
+            <div style={{ fontSize: "9px", color: "#e2e8f0" }}>{data.forces.join(" | ")}</div>
+          </div>
+          
+          <div style={{ marginBottom: "10px" }}>
+            <span style={{ fontSize: "8px", color: data.color, letterSpacing: "1px", display: "block", fontWeight: "bold", marginBottom: "2px" }}>DOCTRINE & TACTICS USED</span>
+            <p style={{ fontSize: "10px", color: "#9ca3af", lineHeight: "1.5" }}>{data.tactics}</p>
+          </div>
+
+          <div style={{ marginBottom: "10px" }}>
+            <span style={{ fontSize: "8px", color: data.color, letterSpacing: "1px", display: "block", fontWeight: "bold", marginBottom: "2px" }}>WEAPONRY & TECH PROFILE</span>
+            <p style={{ fontSize: "10px", color: "#9ca3af", lineHeight: "1.5" }}>{data.weapons}</p>
+          </div>
+
+          <div style={{ marginTop: "12px", padding: "8px 10px", background: data.color + "11", border: `1px solid ${data.color}33` }}>
+            <span style={{ fontSize: "8px", color: data.color, letterSpacing: "1px", display: "block", fontWeight: "bold", marginBottom: "2px" }}>EVOLUTIONARY IMPACT TO TODAY'S STRUCTURE</span>
+            <p style={{ fontSize: "10px", color: "#e2e8f0", lineHeight: "1.5" }}>{data.legacy}</p>
+          </div>
+        </div>
+      )}
+      
+      {!isSelected && (
+        <div style={{ fontSize: "8px", color: "#4b5563", marginTop: "8px", textAlign: "right", letterSpacing: "1px" }}>
+          TAP TO EXPAND DOCTRINAL PROFILE ▽
+        </div>
+      )}
+    </div>
+  );
+}
+
+function App() {
+  const [selectedIdx, setSelectedIdx] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredData = TIMELINE_DATA.filter(item => 
+    item.era.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.legacy.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  return (
+    <div style={{ minHeight: "100vh", background: "#060609", color: "#e2e8f0", padding: "16px" }}>
+      
+      {/* Header Matrix */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "20px", borderBottom: "1px solid #1f2937", paddingBottom: "14px" }}>
+        <div>
+          <div style={{ fontSize: "9px", letterSpacing: "3px", color: "#fb923c" }}>SANDF · MILITARY EVOLUTION</div>
+          <div style={{ fontSize: "18px", fontWeight: "900", letterSpacing: "3px", color: "#fff" }}>HISTORICAL CHRONOLOGY</div>
+          <div style={{ fontSize: "9px", color: "#6b7280", marginTop: "4px", lineHeight: "1.4" }}>
+            Vertical lineage mapping the structural developments, tactical innovations, and weapon profiles that formed current defensive doctrines.
+          </div>
+        </div>
+      </div>
+
+      {/* Strategic Information Panel */}
+      <div style={{ background: "#0f0f1a", border: "1px solid #1f2937", padding: "10px 14px", fontSize: "9px", color: "#9ca3af", marginBottom: "16px", letterSpacing: "1px", lineHeight: "1.6" }}>
+        <span style={{ color: "#fb923c", fontWeight: "bold" }}>DOCTRINAL FACTOR:</span> Modern SANDF small-unit autonomy is not purely European. It is an evolutionary synthesis of decentralized Boer Commando structures, hyper-aggressive Zulu encirclement vectors, and arduous counter-insurgency lessons learned during the mid-20th-century bush campaigns.
+      </div>
+
+      {/* Search Filter Node */}
+      <div style={{ marginBottom: "16px" }}>
+        <input 
+          type="text" 
+          placeholder="FILTER BY ERA, TACTIC, OR WEAPON SYSTEM..." 
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          style={{
+            width: "100%",
+            background: "#0a0a0f",
+            border: "1px solid #374151",
+            color: "#fff",
+            padding: "10px",
+            fontSize: "10px",
+            fontFamily: "'Courier New', monospace",
+            letterSpacing: "1px",
+            borderRadius: "2px"
+          }}
+        />
+      </div>
+
+      {/* Vertical Chronological Stack */}
+      <div style={{ position: "relative", paddingLeft: "4px" }}>
+        {filteredData.length > 0 ? (
+          filteredData.map((eraData, idx) => (
+            <TimelineCard 
+              key={idx}
+              data={eraData}
+              isSelected={selectedIdx === idx}
+              onSelect={() => setSelectedIdx(selectedIdx === idx ? null : idx)}
+            />
+          ))
+        ) : (
+          <div style={{ fontSize: "10px", color: "#4b5563", textAlign: "center", padding: "20px" }}>
+            NO MILITARY RECORDS MATCHING QUERY KEYWORD.
+          </div>
+        )}
+      </div>
+
+      {/* Navigation Return Node */}
+      <div>
+        <a href="index.html" className="giant-map-btn">
+          <span><i className="fa-solid fa-shield-halved" style={{ marginRight: "8px" }}></i> Return to Tactical Structure</span>
+          <i className="fa-solid fa-chevron-right"></i>
+        </a>
+      </div>
+
+      {/* Footer System Ledger */}
+      <div style={{ textAlign: "center", marginTop: "24px", color: "#1f2937", fontSize: "8px", letterSpacing: "2px" }}>
+        SANDF EVOLUTIONARY CHRONOLOGY · ENGINE MODE: REACT · EDUCATIONAL REFERENCE ONLY
+      </div>
+
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
