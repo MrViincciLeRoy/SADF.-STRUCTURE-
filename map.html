@@ -3,344 +3,395 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SANDF Operational Map</title>
+<title>SANDF Operational Map Interface</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
 <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#060609;color:#e2e8f0;font-family:'Courier New',monospace;overflow:hidden;height:100vh}
-::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#111}::-webkit-scrollbar-thumb{background:#333}
-.fade-in{animation:fadeIn .25s ease}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
 
-/* Tactical radiating pulse animation mapped directly to Leaflet DOM injection points */
-@keyframes tacticalPulse {
-  0% { transform: scale(0.6); opacity: 0.9; box-shadow: 0 0 0 0 var(--pulse-color); }
-  70% { transform: scale(1.6); opacity: 0; box-shadow: 0 0 0 14px var(--pulse-color); }
-  100% { transform: scale(0.6); opacity: 0; box-shadow: 0 0 0 0 var(--pulse-color); }
+/* Leaflet Layout Reset Elements */
+#map {
+  width: 100%;
+  height: 100%;
+  background: #060609 !important;
 }
 
+/* Custom UI Leaflet Map Markers styling overrides */
 .custom-tactical-marker {
   background: none;
   border: none;
 }
-
-.pulse-ring {
+.marker-radar-pin {
+  width: 30px;
+  height: 30px;
+  border-radius: 50% 50% 50% 0;
+  background: var(--marker-color);
   position: absolute;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1.5px solid var(--pulse-color);
-  background: transparent;
-  pointer-events: none;
-  left: -16px;
-  top: -16px;
-  animation: tacticalPulse 2.2s infinite cubic-bezier(0.25, 0, 0, 1);
-}
-
-.node-core {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: #060609;
-  border: 2px solid var(--pulse-color);
+  transform: rotate(-45deg);
+  left: -15px;
+  top: -15px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  box-shadow: 0 0 12px var(--marker-color);
+  border: 1px solid rgba(255,255,255,0.4);
+}
+.marker-radar-pin span {
+  transform: rotate(45deg);
+  font-size: 14px;
+}
+
+/* Custom Tactical Pulsing Glow Rings around Leaflet Marker positions */
+@keyframes tacticalPulse {
+  0% { transform: scale(0.5); opacity: 0.9; box-shadow: 0 0 0 0 var(--pulse-color); }
+  70% { transform: scale(1.6); opacity: 0; box-shadow: 0 0 0 14px var(--pulse-color); }
+  100% { transform: scale(0.5); opacity: 0; box-shadow: 0 0 0 0 var(--pulse-color); }
+}
+.marker-pulse-ring {
   position: absolute;
-  left: -10px;
-  top: -10px;
-  z-index: 2;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  width: 34px;
+  height: 34px;
+  left: -17px;
+  top: -17px;
+  border-radius: 50%;
+  border: 1.5px solid var(--pulse-color);
+  pointer-events: none;
+  animation: tacticalPulse 2.2s infinite cubic-bezier(0.25, 0, 0, 1);
 }
 
-.node-core:hover {
-  background: var(--pulse-color);
-  transform: scale(1.25);
-  box-shadow: 0 0 15px var(--pulse-color);
+/* Dark Minimal Dark Tooltip popups rules */
+.leaflet-popup-content-wrapper {
+  background: #0a0a0f !important;
+  color: #e2e8f0 !important;
+  border: 1px solid #1f2937;
+  border-radius: 2px !important;
+  font-family: 'Courier New', monospace;
+}
+.leaflet-popup-tip {
+  background: #0a0a0f !important;
+  border: 1px solid #1f2937;
+}
+.leaflet-container a.leaflet-popup-close-button {
+  color: #6b7280 !important;
 }
 
-/* Override Leaflet UI to fit clean system look */
-.leaflet-container {
-  background: #09090e !important;
+.popup-card h3 {
+  font-size: 11px;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+  color: #ffffff;
+  border-bottom: 1px dashed #222;
+  padding-bottom: 4px;
 }
-.leaflet-bar {
-  border: 1px solid #1f2937 !important;
+.popup-card p {
+  font-size: 10px;
+  color: #9ca3af;
+  line-height: 1.4;
+  margin-bottom: 8px;
 }
-.leaflet-bar a {
-  background-color: #0f0f1a !important;
-  color: #9ca3af !important;
-  border-bottom: 1px solid #1f2937 !important;
+.popup-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  color: #3b82f6;
+  text-decoration: none;
+  font-weight: bold;
 }
-.leaflet-bar a:hover {
-  background-color: #1e293b !important;
-  color: #fff !important;
+.popup-link:hover {
+  text-decoration: underline;
 }
+
+/* Custom Scrollbar configuration matching primary app */
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#111}::-webkit-scrollbar-thumb{background:#333}
+.fade-in{animation:fadeIn .25s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
 </style>
 </head>
 <body>
 <div id="root"></div>
+
 <script type="text/babel">
 const { useState, useMemo, useEffect, useRef } = React;
 
-// Fully exhaustive coordinate data of SANDF operational infrastructure across branches
+// Fully enriched matrix mapping genuine installations across the arms of service
 const BASE_HQ = [
-  // ================= NATIONAL & ARMED FORCES COMMAND =================
-  { n: "SANDF Defence Headquarters (Erasmuskloof)", loc: "Pretoria, Gauteng", lat: -25.8182, lng: 28.2531, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Supreme joint command complex housing the Ministry of Defence and Chief of the SANDF." },
-  { n: "HQ SA Army Land Command", loc: "Dequar Road, Pretoria", lat: -25.7531, lng: 28.1812, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Primary administrative and tactical operational command framework for all land forces." },
-  { n: "Joint Operations Division HQ", lat: -25.8055, lng: 28.2415, loc: "Swartkop, Gauteng", level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Coordinates all domestic border safeguarding (Op Corona) and external UN/SADC peacekeeping tasks." },
+  // --- INFANTRY BATTALIONS (Orange Hierarchy Scale) ---
+  { n: "1 SA Infantry Battalion", loc: "Tempe, Bloemfontein", lat: -29.098, lng: 26.155, level: "BATTALION", branch: "Infantry", color: "#fb923c", icon: "🪖", desc: "Light infantry framework component regularly deployed under Op Corona border security ops." },
+  { n: "2 SA Infantry Battalion", loc: "Wallmansthal, Pretoria", lat: -25.568, lng: 28.292, level: "BATTALION", branch: "Infantry", color: "#fb923c", icon: "🪖", desc: "Mechanised infantry element equipped and integrated with Ratel Infantry Fighting Vehicles." },
+  { n: "3 SA Infantry Battalion", loc: "Kimberley", lat: -28.741, lng: 24.757, level: "BATTALION", branch: "Infantry", color: "#fb923c", icon: "🪖", desc: "Main physical training engine center and light desert infrastructure specialists." },
+  { n: "4 SA Infantry Battalion", loc: "Middelburg, Mpumalanga", lat: -25.791, lng: 29.471, level: "BATTALION", branch: "Infantry", color: "#fb923c", icon: "🪖", desc: "Motorised infantry framework supported by rugged tactical SAMIL supply configurations." },
+  { n: "5 SA Infantry Battalion", loc: "Doornkop, Johannesburg", lat: -26.262, lng: 27.842, level: "BATTALION", branch: "Infantry", color: "#fb923c", icon: "🪖", desc: "Urban terrain tactical specialists tasked with structural security operations inside dense metros." },
+  { n: "6 SA Infantry Battalion", loc: "Oudtshoorn", lat: -33.599, lng: 22.214, level: "BATTALION", branch: "Infantry", color: "#fb923c", icon: "🪖", desc: "Light infantry specialists trained for deployments across elevated, mountainous theater fields." },
+  { n: "7 SA Infantry Battalion", loc: "Phalaborwa, Limpopo", lat: -23.945, lng: 31.134, level: "BATTALION", branch: "Infantry", color: "#fb923c", icon: "🪖", desc: "Bushveld tracking units patrolling dense terrain segments across the northern border zones." },
+  { n: "8 SA Infantry Battalion", loc: "Upington", lat: -28.402, lng: 21.267, level: "BATTALION", branch: "Infantry", color: "#fb923c", icon: "🪖", desc: "Mechanised desert infantry utilizing heavy armored tracking configurations for hot-zone fields." },
+  { n: "9 SA Infantry Battalion", loc: "Mtubatuba, KZN", lat: -28.416, lng: 32.185, level: "BATTALION", branch: "Infantry", color: "#fb923c", icon: "🪖", desc: "Motorised elements optimized for coastal bushlands, maritime littoral environments, and thickets." },
   
-  // ================= SPECIAL FORCES EXTRACTION =================
-  { n: "Special Forces Headquarters (SFHQ)", loc: "Swartkop, Pretoria", lat: -25.8115, lng: 28.1632, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Command center for elite Tier 1 specialized operators and unconventional defense policy." },
-  { n: "4 Special Forces Regiment (Maritime)", loc: "Langebaan, Western Cape", lat: -33.0988, lng: 18.0412, level: "COMPANY", color: "#f472b6", icon: "🦅", desc: "Elite maritime assault operators specialized in covert beach reconnaissance, diving, and small-craft operations." },
-  { n: "5 Special Forces Regiment", loc: "Phalaborwa, Limpopo", lat: -23.9452, lng: 31.1398, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Deep airborne reconnaissance, unconventional warfare, counter-insurgency, and specialized tracking nodes." },
-  { n: "Special Forces School", loc: "Murrayhill, Gauteng", lat: -25.4851, lng: 28.2892, level: "COMPANY", color: "#f472b6", icon: "🦅", desc: "High-security operational screening, evaluation, and selection facility for Special Forces candidates." },
+  // --- COMBAT ARMOUR & ARMORED SUBDIVISIONS ---
+  { n: "Regiment Mooirivier (Armour)", loc: "Potchefstroom", lat: -26.701, lng: 27.085, level: "BATTALION", branch: "Armour", color: "#fb923c", icon: "🎯", desc: "Primary iron fist strike component executing heavy armor deployments with Olifant Mk2 MBTs." },
+  { n: "School of Armour / Tank Squadrons", loc: "Tempe, Bloemfontein", lat: -29.095, lng: 26.160, level: "COMPANY", branch: "Armour", color: "#f472b6", icon: "⭐", desc: "Tactical armor wing containing standing tank training squadrons and experimental section lines." },
 
-  // ================= INFANTRY BATTALIONS (ACTIVE & RESERVES) =================
-  { n: "1 SA Infantry Battalion", loc: "Tempe, Bloemfontein", lat: -29.0982, lng: 26.1821, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Conventional mechanized air-assault light infantry training wings." },
-  { n: "2 SA Infantry Battalion", loc: "Wallmansthal, Gauteng", lat: -25.5672, lng: 28.2915, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Mechanized regular infantry elements equipped with Ratel combat systems." },
-  { n: "3 SA Infantry Battalion", loc: "Kimberley, Northern Cape", lat: -28.7451, lng: 24.7562, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Main basic military training center (BMTC) and desert-optimized operational asset." },
-  { n: "4 SA Infantry Battalion", loc: "Middelburg, Mpumalanga", lat: -25.7612, lng: 29.4751, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Motorized infantry framework backed by Samil tactical logistics systems." },
-  { n: "5 SA Infantry Battalion", loc: "Doornkop, Johannesburg", lat: -26.2415, lng: 27.8462, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Specialized high-density urban deployment infantry and internal safety security tasks." },
-  { n: "6 SA Infantry Battalion", loc: "Oudtshoorn, Western Cape", lat: -33.6021, lng: 22.1915, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Light infantry unit focused heavily on mountain warfare, route tracking, and survival." },
-  { n: "7 SA Infantry Battalion", loc: "Phalaborwa, Limpopo", lat: -23.9515, lng: 31.1121, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Dense bushveld tracker operations and active regional border security protocols." },
-  { n: "8 SA Infantry Battalion", loc: "Upington, Northern Cape", lat: -28.4112, lng: 21.2541, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Heavy mechanized infantry optimized with armor variations for arid zones." },
-  { n: "9 SA Infantry Battalion", loc: "Mtubatuba, KwaZulu-Natal", lat: -28.4215, lng: 32.1812, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Motorized tactical groups optimized for coastal, marsh, and littoral operations environments." },
-  { n: "21 SA Infantry Battalion (Reserve)", loc: "Makhanda (Grahamstown), E. Cape", lat: -33.3195, lng: 26.5051, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Strategic operational regional infantry reinforcement assets." },
-  { n: "45 Parachute Regiment", loc: "Tempe, Bloemfontein", lat: -29.0911, lng: 26.1754, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Rapid airborne intervention core capable of immediate strategic drop deployments." },
+  // --- INDIRECT ARTILLERY SUPPORT NETWORK ---
+  { n: "4 Artillery Regiment", loc: "Potchefstroom", lat: -26.698, lng: 27.092, level: "BATTALION", branch: "Artillery", color: "#fb923c", icon: "💥", desc: "Heavy artillery unit operating long-range G5 towed and G6 self-propelled 155mm field weapon batteries." },
+  { n: "10 Anti-Aircraft Regiment", loc: "Kimberley Base", lat: -28.745, lng: 24.762, level: "BATTALION", branch: "Artillery", color: "#fb923c", icon: "💥", desc: "Strategic defense asset operating surface-to-air missile components and rapid fire air defense networks." },
 
-  // ================= SUPPORT FORMATIONS (ARMOR, ARTY, ENGR, SIGS) =================
-  { n: "Regiment Mooirivier / Armour School", loc: "Potchefstroom, North West", lat: -26.6981, lng: 27.0815, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Heavy iron armor fist operating Olifant Mk2 MBTs and Rooikat armored cars." },
-  { n: "4 Artillery Regiment", loc: "Potchefstroom, North West", lat: -26.6912, lng: 27.0911, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Heavy indirect fire support center managing G5 towed and G6 self-propelled 155mm batteries." },
-  { n: "10 Anti-Aircraft Regiment", loc: "Kimberley, Northern Cape", lat: -28.7395, lng: 24.7412, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Tactical air defense asset managing Starstreak and twin 35mm air-shield networks." },
-  { n: "1 Engineer Support Regiment", loc: "Tempe, Bloemfontein", lat: -29.1025, lng: 26.1895, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Heavy engineering asset providing obstacle clearance, pontoon bridging, and logistical field infrastructure." },
-  { n: "7 Signal Regiment (Electronic Warfare)", loc: "Thaba Tshwane, Pretoria", lat: -25.7915, lng: 28.1451, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Secures tactical battlefield data pipelines and coordinates communications security." },
+  // --- COMBAT ENGINEERS & THEATER SIGNALS ---
+  { n: "1 Engineer Support Regiment", loc: "Tempe, Bloemfontein", lat: -29.102, lng: 26.148, level: "BATTALION", branch: "Engineers", color: "#fb923c", icon: "📡", desc: "Tasked with construction, tactical asset bridging, defensive lines fortifications, and mine clearings." },
+  { n: "7 Signal Regiment (EW Command)", loc: "Thaba Tshwane, Pretoria", lat: -25.792, lng: 28.145, level: "BATTALION", branch: "Signals", color: "#fb923c", icon: "📡", desc: "Manages encrypted tactical command backbones and active electronic warfare tracking configurations." },
+  
+  // --- COY / SQUADRON LEVEL LAYER (Pink Hierarchy Scale) ---
+  { n: "Alpha Weapon Subsections (11 Field Coy)", loc: "Potchefstroom Base", lat: -26.705, lng: 27.072, level: "COMPANY", branch: "Engineers", color: "#f472b6", icon: "📡", desc: "Field engineer company elements assigned directly to regional rapid deployment groups." },
+  
+  // --- SPECIAL forces REGIMENTS (Purple Specialists Command) ---
+  { n: "4 Special Forces Regiment (Maritime Ops)", loc: "Langebaan, Western Cape", lat: -33.095, lng: 18.042, level: "COMPANY", branch: "Special Forces", color: "#a78bfa", icon: "🔱", desc: "Tier 1 maritime operators specializing in deep-diving assault deployments and covert sea recon lines." },
+  { n: "5 Special Forces Regiment (Infiltration Command)", loc: "Phalaborwa", lat: -23.952, lng: 31.141, level: "COMPANY", branch: "Special Forces", color: "#a78bfa", icon: "🔱", desc: "Elite deep infiltration component executing long-range counter-insurgency and precision actions." },
 
-  // ================= SOUTH AFRICAN AIR FORCE (SAAF) =================
-  { n: "SAAF Air Command HQ", loc: "Pretoria, Gauteng", lat: -25.7595, lng: 28.1921, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Command and control nodes for national airspace interception and flight assets." },
-  { n: "AFB Waterkloof (2 & 35 Squadron Base)", loc: "Centurion, Gauteng", lat: -25.8291, lng: 28.2215, level: "COMPANY", color: "#f472b6", icon: "🦅", desc: "Strategic air transport hub housing C-130BZ Hercules and VIP air transport links." },
-  { n: "AFB Makhado (2 Squadron - Gripen Interceptors)", loc: "Louis Trichardt, Limpopo", lat: -23.1611, lng: 29.6991, level: "COMPANY", color: "#f472b6", icon: "🦅", desc: "Fighter town of South Africa, housing active supersonic JAS-39 Gripen multirole elements." },
-  { n: "AFB Hoedspruit (19 Squadron Command)", loc: "Hoedspruit, Limpopo", lat: -24.3582, lng: 31.0514, level: "COMPANY", color: "#f472b6", icon: "🦅", desc: "Strategic forward airfield tracking thick border quadrants and tracking vectors." },
-  { n: "AFB Bloemspruit (87 Helicopter Flying School)", loc: "Bloemfontein, Free State", lat: -29.0945, lng: 26.2991, level: "COMPANY", color: "#f472b6", icon: "🦅", desc: "Advanced training wings for Oryx heavy utility and Rooivalk combat helicopter platforms." },
-  { n: "AFB Ysterplaat (Maritime Helicopter Wings)", loc: "Cape Town, Western Cape", lat: -33.9142, lng: 18.4982, level: "COMPANY", color: "#f472b6", icon: "🦅", desc: "Provides Super Lynx and Oryx support components to naval platforms." },
+  // --- SA AIR FORCE AIRBASE NETWORK (Cyan Infrastructure Scale) ---
+  { n: "AFB Waterkloof (28 & 44 Transport Squadrons)", loc: "Pretoria", lat: -25.832, lng: 28.221, level: "BATTALION", branch: "Air Force", color: "#22d3ee", icon: "🦅", desc: "Primary heavy lift transport terminal logistics air hub flying multi-theater C-130BZ grids." },
+  { n: "AFB Hoedspruit (2 Squadron Air Interceptors)", loc: "Limpopo", lat: -24.361, lng: 31.052, level: "COMPANY", branch: "Air Force", color: "#f472b6", icon: "🦅", desc: "Air superiority deployment sector flying active JAS-39 Gripen Mach-2 multirole fighter weapon systems." },
+  { n: "AFB Makhado (85 Combat Flying School)", lat: -23.158, lng: 29.696, level: "COMPANY", branch: "Air Force", color: "#f472b6", icon: "🦅", desc: "Advanced combat flight command station teaching Hawk Mk120 weapon engagement metrics." },
+  { n: "AFB Langebaanweg (35 Maritime Recon Flight)", loc: "Saldanha Bay", lat: -32.971, lng: 18.158, level: "COMPANY", branch: "Air Force", color: "#f472b6", icon: "🦅", desc: "Maritime patrol center patrolling the Atlantic coastline using sensor-rigged C-47TP conversions." },
 
-  // ================= SOUTH AFRICAN NAVY (SAN) =================
-  { n: "Navy Headquarters (SAS Immortelle)", loc: "Pretoria, Gauteng", lat: -25.7485, lng: 28.1872, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Administrative operational naval command based inland for structural synergy." },
-  { n: "SAS Simonsberg (Naval Fleet Command Base)", loc: "Simon's Town, Western Cape", lat: -34.1915, lng: 18.4325, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Primary dockyards staging Valour-class MEKO frigates and maritime support hulls." },
-  { n: "SAS Diamant (Submarine Flotilla Hub)", loc: "Simon's Town, Western Cape", lat: -34.1895, lng: 18.4282, level: "COMPANY", color: "#f472b6", icon: "🦅", desc: "Strategic sub-surface component housing Heroine-class Type 209 diesel-electric systems." },
-  { n: "Naval Base Durban (SAS Scorpion)", loc: "Salisbury Island, Durban", lat: -29.8912, lng: 31.0395, level: "COMPANY", color: "#f472b6", icon: "🦅", desc: "Re-established home port for Warrior-class multi-role offshore patrol vessels (MMOVs)." },
-
-  // ================= JOINT TACTICAL REGIONAL HEADQUARTERS =================
-  { n: "Joint Tactical HQ Gauteng", loc: "Johannesburg", lat: -26.2041, lng: 28.0473, level: "COMPANY", color: "#f472b6", icon: "🦅", desc: "Provincial Joint Command overseeing domestic infrastructure security operations." },
-  { n: "Joint Tactical HQ Limpopo", loc: "Polokwane", lat: -23.9045, lng: 29.4675, level: "COMPANY", color: "#f472b6", icon: "🦅", desc: "Directs border deployment grids along the Zimbabwe/Botswana interfaces." },
-  { n: "Joint Tactical HQ Mpumalanga", loc: "Mbombela (Nelspruit)", lat: -25.4752, lng: 30.9694, level: "COMPANY", color: "#f472b6", icon: "🦅", desc: "Coordinates high-risk border parameters along the Mozambique/Eswatini fence line." },
-  { n: "Joint Tactical HQ KwaZulu-Natal", loc: "Durban", lat: -29.8587, lng: 31.0218, level: "COMPANY", color: "#f472b6", icon: "🦅", desc: "Monitors coastal borders and inland structures along eastern parameters." },
-
-  // ================= MEDICAL SERVICE (SAMHS) =================
-  { n: "1 Military Hospital (Thaba Tshwane)", loc: "Pretoria, Gauteng", lat: -25.7962, lng: 28.1485, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Flagship tertiary multi-trauma medical center serving all armed forces components." },
-  { n: "2 Military Hospital (Wynberg)", loc: "Cape Town, Western Cape", lat: -34.0041, lng: 18.4612, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Naval and coastal tracking health infrastructure reinforcement asset." },
-  { n: "3 Military Hospital (Tempe)", loc: "Bloemfontein, Free State", lat: -29.0961, lng: 26.1794, level: "BATTALION", color: "#fb923c", icon: "⚜️", desc: "Medical support structure tasked with backing paratrooper and armor formations." }
+  // --- SA NAVY FLOTILLA BASES (Navy Scale) ---
+  { n: "SAS Simonsberg (Frigate Flotilla Complex)", loc: "Simon's Town Base", lat: -34.192, lng: 18.434, level: "BATTALION", branch: "Navy", color: "#818cf8", icon: "⚓", desc: "Primary maritime deep ocean projection wing managing Valour-class MEKO A-200 guided-missile hulls." },
+  { n: "SAS Diamant (Submarine Stealth Core)", loc: "Simon's Town Base", lat: -34.194, lng: 18.428, level: "COMPANY", branch: "Navy", color: "#f472b6", icon: "⚓", desc: "Subsurface warfare facility running operational Type-209/1400 diesel-electric strike systems." },
+  { n: "Naval Station Durban (Littoral Patrol Wing)", loc: "Salisbury Island, Durban", lat: -29.878, lng: 31.048, level: "COMPANY", branch: "Navy", color: "#f472b6", icon: "⚓", desc: "East coast patrol node operating newly assigned Warrior-class multi-role offshore vessels." }
 ];
 
 function App() {
   const [activeNode, setActiveNode] = useState(null);
   const [filterLevel, setFilterLevel] = useState("ALL");
+  const [filterBranch, setFilterBranch] = useState("ALL");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  
   const mapRef = useRef(null);
-  const leafletMapInstance = useRef(null);
-  const markersRef = useRef([]);
+  const leafletMarkersRef = useRef([]);
 
-  const filteredHQ = useMemo(() => {
-    if (filterLevel === "ALL") return BASE_HQ;
-    return BASE_HQ.filter(node => node.level === filterLevel);
-  }, [filterLevel]);
-
-  // Initializing the Leaflet Dynamic Map Framework
-  useEffect(() => {
-    if (!leafletMapInstance.current) {
-      // Setup map, centered globally over South Africa
-      leafletMapInstance.current = L.map('map', {
-        zoomControl: false,
-        minZoom: 5,
-        maxZoom: 16
-      }).setView([-28.5, 25.0], 6);
-
-      // CartoDB Dark Matter tileset deployment matching index theme context
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; OpenStreetMap &copy; CARTO',
-        subdomains: 'abcd'
-      }).addTo(leafletMapInstance.current);
-
-      L.control.zoom({ position: 'topright' }).addTo(leafletMapInstance.current);
-    }
+  // Extract unique tactical branches for control arrays
+  const branches = useMemo(() => {
+    return ["ALL", ...new Set(BASE_HQ.map(item => item.branch))];
   }, []);
 
-  // Update markers when filters mutate
+  // Structural filtering sequence
+  const filteredHQ = useMemo(() => {
+    return BASE_HQ.filter(node => {
+      const matchLvl = filterLevel === "ALL" || node.level === filterLevel;
+      const matchBr = filterBranch === "ALL" || node.branch === filterBranch;
+      return matchLvl && matchBr;
+    });
+  }, [filterLevel, filterBranch]);
+
+  // Handle building and real-time syncing of the Leaflet Map Engine
   useEffect(() => {
-    if (leafletMapInstance.current) {
-      // Clear legacy active markers
-      markersRef.current.forEach(marker => marker.remove());
-      markersRef.current = [];
+    // Generate open-source tile layer framework map instance centered on South Africa
+    mapRef.current = L.map('map', {
+      zoomControl: false
+    }).setView([-28.5, 25.0], 6);
 
-      // Render updated array elements
-      filteredHQ.forEach(node => {
-        const customHtml = `
-          <div style="position:relative; width:0; height:0;" class="radar-node-wrapper">
-            <div class="pulse-ring" style="--pulse-color: ${node.color}"></div>
-            <div class="node-core" style="--pulse-color: ${node.color}">${node.icon}</div>
+    L.control.zoom({ position: 'bottomright' }).addTo(mapRef.current);
+
+    // Apply CartoDB Minimal Dark Matter layout skin layer
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OpenStreetMap &copy; CARTO',
+      subdomains: 'abcd',
+      maxZoom: 18
+    }).addTo(mapRef.current);
+
+    return () => {
+      if (mapRef.current) mapRef.current.remove();
+    };
+  }, []);
+
+  // Update geospatial layout pins dynamically based on filter changes
+  useEffect(() => {
+    if (!mapRef.current) return;
+
+    // Purge aging pins from canvas bounds
+    leafletMarkersRef.current.forEach(m => mapRef.current.removeLayer(m));
+    leafletMarkersRef.current = [];
+
+    // Map out new positions
+    filteredHQ.forEach(node => {
+      // Build tactical custom HTML marker element structure
+      const divIcon = L.divIcon({
+        className: 'custom-tactical-marker',
+        html: `
+          <div style="position: relative;">
+            <div class="marker-pulse-ring" style="--pulse-color: ${node.color}"></div>
+            <div class="marker-radar-pin" style="--marker-color: ${node.color}">
+              <span>${node.icon}</span>
+            </div>
           </div>
-        `;
-
-        const tacticalIcon = L.divIcon({
-          className: 'custom-tactical-marker',
-          html: customHtml,
-          iconSize: [0, 0],
-          iconAnchor: [0, 0]
-        });
-
-        const marker = L.marker([node.lat, node.lng], { icon: tacticalIcon })
-          .addTo(leafletMapInstance.current);
-
-        // Bind interactive event loops
-        marker.on('mouseover', () => setActiveNode(node));
-        marker.on('click', () => {
-          const encodedLevel = encodeURIComponent(node.level);
-          const encodedNode = encodeURIComponent(node.n);
-          window.location.href = `index.html?view=${encodedLevel}&search=${encodedNode}`;
-        });
-
-        markersRef.current.push(marker);
+        `,
+        iconSize: [30, 30],
+        iconAnchor: [15, 15],
+        popupAnchor: [0, -18]
       });
+
+      // Build text payload modal
+      const popupHTML = `
+        <div class="popup-card">
+          <h3>${node.n}</h3>
+          <p><strong>LOC:</strong> ${node.loc}<br/><strong>SCALE:</strong> ${node.level} (${node.branch})</p>
+          <p>${node.desc}</p>
+          <a href="index.html?view=${encodeURIComponent(node.level)}&search=${encodeURIComponent(node.n)}" class="popup-link" target="_parent">
+            <i class="fa-solid fa-network-wired"></i> Initialize Tree View
+          </a>
+        </div>
+      `;
+
+      const marker = L.marker([node.lat, node.lng], { icon: divIcon })
+        .addTo(mapRef.current)
+        .bindPopup(popupHTML);
+
+      // Connect hover actions to telemetry readout panel
+      marker.on('mouseover', () => setActiveNode(node));
+      
+      leafletMarkersRef.current.push(marker);
+    });
+
+    // Auto fit camera view fields if specific subsets are applied
+    if (filteredHQ.length > 0 && (filterLevel !== "ALL" || filterBranch !== "ALL")) {
+      const group = new L.featureGroup(leafletMarkersRef.current);
+      mapRef.current.fitBounds(group.getBounds().pad(0.15));
     }
-  }, [filteredHQ]);
+  }, [filteredHQ, filterLevel, filterBranch]);
 
-  // Command panel viewport relocation engine
-  const focusLocation = (lat, lng, zoom) => {
-    if (leafletMapInstance.current) {
-      leafletMapInstance.current.setView([lat, lng], zoom, {
-        animate: true,
-        duration: 1.2
-      });
+  // Sidebar camera routing command handler
+  const panToTargetNode = (coords, node) => {
+    if (mapRef.current) {
+      setActiveNode(node);
+      mapRef.current.setView(coords, 11, { animate: true, duration: 1.2 });
     }
   };
 
   return (
-    <div className="fade-in" style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
-      {/* Tactical Control Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "14px 16px", borderBottom: "1px solid #111827", background: "#0a0a0f" }}>
-        <div>
-          <div style={{ fontSize: "9px", letterSpacing: "3px", color: "#3b82f6" }}>● STRATEGIC LIVE COMMAND NET</div>
-          <div style={{ fontSize: "16px", fontWeight: "900", letterSpacing: "2px", color: "#fff" }}>SANDF INTEGRATED GEOSPATIAL MAP</div>
-          <div style={{ fontSize: "9px", color: "#4b5563", marginTop: "2px" }}>Hover over tracking indicators for live intelligence telemetry. Click any node to open its structural context.</div>
+    <div className="fade-in" style={{ display: "flex", height: "100vh", position: "relative" }}>
+      
+      {/* Collapsible Tactical Master Control Sidebar Panel */}
+      <div style={{
+        width: sidebarOpen ? "340px" : "0px",
+        background: "#0a0a0f",
+        borderRight: sidebarOpen ? "1px solid #1f2937" : "none",
+        display: "flex",
+        flexDirection: "column",
+        transition: "width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)",
+        overflow: "hidden",
+        zIndex: 1000,
+        position: "relative"
+      }}>
+        
+        {/* Header Branding Panel */}
+        <div style={{ padding: "16px", borderBottom: "1px solid #1f2937" }}>
+          <div style={{ fontSize: "9px", letterSpacing: "3px", color: "#3b82f6" }}>● RADAR TELEMETRY FEED</div>
+          <div style={{ fontSize: "14px", fontWeight: "900", letterSpacing: "2px", color: "#fff", marginTop: "4px" }}>GEOSPATIAL C2 GRID</div>
         </div>
-        <a href="index.html" style={{
-          background: "#0f0f1a", border: "1px solid #374151", color: "#9ca3af",
-          padding: "8px 12px", cursor: "pointer", fontSize: "9px", letterSpacing: "2px", textDecoration: "none", borderRadius: "2px", fontFamily: "Courier New"
-        }}><i className="fa-solid fa-network-wired" style={{ marginRight: "6px" }}></i> TACTICAL TREE</a>
+
+        {/* Live Active Selected Point Telemetry Readout */}
+        <div style={{ padding: "14px", background: "#060609", margin: "12px", border: "1px solid #1f2937", borderRadius: "2px" }}>
+          <div style={{ fontSize: "8px", letterSpacing: "1px", color: "#4b5563", marginBottom: "6px" }}>🎯 CAPTURED NODE STREAM</div>
+          {activeNode ? (
+            <div className="fade-in">
+              <div style={{ fontSize: "11px", fontWeight: "bold", color: "#fff" }}>{activeNode.n}</div>
+              <div style={{ fontSize: "9px", color: activeNode.color, margin: "4px 0" }}>⚡ {activeNode.level} FIELD SCALE</div>
+              <div style={{ fontSize: "9px", color: "#9ca3af", lineHeight: "1.4" }}>{activeNode.desc}</div>
+              <div style={{ fontSize: "8px", color: "#3b82f6", marginTop: "8px", textAlign: "right" }}>CLICK MARKER MAP TO JUMP →</div>
+            </div>
+          ) : (
+            <div style={{ fontSize: "9px", color: "#374151", textAlign: "center", padding: "12px 0" }}>
+              <i className="fa-solid fa-satellite-dish" style={{ marginBottom: "6px", display: "block" }}></i>
+              ACQUIRING BEACON SIGNAL
+            </div>
+          )}
+        </div>
+
+        {/* Scrollable Node Selection Listing Index */}
+        <div style={{ flexGrow: 1, overflowY: "auto", padding: "0 12px 12px" }}>
+          <div style={{ fontSize: "8px", color: "#4b5563", letterSpacing: "1px", marginBottom: "8px" }}>📦 ACTIVE STRATEGIC ASSETS ({filteredHQ.length})</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            {filteredHQ.map((item, idx) => (
+              <div key={idx} 
+                   onClick={() => panToTargetNode([item.lat, item.lng], item)}
+                   style={{
+                     background: "#111119", border: "1px solid #1f2937", borderLeft: `3px solid ${item.color}`,
+                     padding: "8px 10px", borderRadius: "2px", cursor: "pointer", transition: "all 0.15s"
+                   }}
+                   onMouseEnter={(e) => e.currentTarget.style.borderColor = "#4b5563"}
+                   onMouseLeave={(e) => e.currentTarget.style.borderColor = "#1f2937"}>
+                <div style={{ fontSize: "10px", fontWeight: "bold", color: "#f3f4f6" }}>{item.n}</div>
+                <div style={{ fontSize: "8px", color: "#6b7280", marginTop: "4px" }}>📍 {item.loc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Return to Dashboard Command Anchor */}
+        <div style={{ padding: "12px", borderTop: "1px solid #1f2937", background: "#0a0a0f" }}>
+          <a href="index.html" style={{
+            display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
+            width: "100%", padding: "10px", background: "#111827", border: "1px solid #374151",
+            color: "#ffffff", textDecoration: "none", fontSize: "10px", letterSpacing: "1px", fontWeight: "bold"
+          }}>
+            <i className="fa-solid fa-arrow-left-long"></i> RETURN TO MAIN DISCIPLINE TREE
+          </a>
+        </div>
       </div>
 
-      {/* Primary Dashboard Split Workspace */}
-      <div style={{ display: "flex", flexGrow: 1, overflow: "hidden", position: "relative" }}>
+      /* Sidebar Collapse Toggle Button */
+      <button 
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        style={{
+          position: "absolute", top: "16px", left: sidebarOpen ? "356px" : "16px",
+          background: "#0a0a0f", border: "1px solid #1f2937", color: "#3b82f6",
+          width: "36px", height: "36px", cursor: "pointer", zIndex: 1100,
+          borderRadius: "2px", display: "flex", alignItems: "center", justifyContent: "center",
+          transition: "left 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)", boxShadow: "0 0 10px rgba(0,0,0,0.5)"
+        }}
+        title={sidebarOpen ? "Hide Control Panel" : "Expand Control Panel"}>
+        <i className={`fa-solid ${sidebarOpen ? "fa-angles-left" : "fa-bars"}`}></i>
+      </button>
+
+      {/* Geospatial Map Canvas Container viewport wrapper */}
+      <div style={{ flexGrow: 1, position: "relative", height: "100%" }}>
         
-        {/* Left Side Quick Relocation Telemetry Panel */}
-        <div style={{ width: "300px", background: "#0a0a0f", borderRight: "1px solid #1f2937", display: "flex", flexDirection: "column", padding: "12px", gap: "10px", overflowY: "auto" }}>
-          <div style={{ fontSize: "9px", letterSpacing: "2px", color: "#4b5563", fontWeight: "bold" }}>STRATEGIC HQ COMMANDS</div>
-          
-          <div onClick={() => focusLocation(-25.8182, 28.2531, 11)} style={{ background: "#111119", border: "1px solid #1f2937", borderLeft: "3px solid #3b82f6", padding: "8px", cursor: "pointer", borderRadius: "2px" }}>
-            <div style={{ fontSize: "10px", fontWeight: "bold" }}>Defence Headquarters</div>
-            <div style={{ fontSize: "8px", color: "#6b7280", marginTop: "2px" }}>Pretoria Complex / Joint Ops</div>
-          </div>
-
-          <div onClick={() => focusLocation(-25.8115, 28.1632, 11)} style={{ background: "#111119", border: "1px solid #1f2937", borderLeft: "3px solid #ef4444", padding: "8px", cursor: "pointer", borderRadius: "2px" }}>
-            <div style={{ fontSize: "10px", fontWeight: "bold" }}>Special Forces Command</div>
-            <div style={{ fontSize: "8px", color: "#6b7280", marginTop: "2px" }}>SFHQ / Phalaborwa / Langebaan</div>
-          </div>
-
-          <div onClick={() => focusLocation(-29.0982, 26.1821, 11)} style={{ background: "#111119", border: "1px solid #1f2937", borderLeft: "3px solid #fb923c", padding: "8px", cursor: "pointer", borderRadius: "2px" }}>
-            <div style={{ fontSize: "10px", fontWeight: "bold" }}>Army Support Core (Tempe)</div>
-            <div style={{ fontSize: "8px", color: "#6b7280", marginTop: "2px" }}>1 SAI / 45 Para / Engineers</div>
-          </div>
-
-          <div onClick={() => focusLocation(-25.8291, 28.2215, 11)} style={{ background: "#111119", border: "1px solid #1f2937", borderLeft: "3px solid #06b6d4", padding: "8px", cursor: "pointer", borderRadius: "2px" }}>
-            <div style={{ fontSize: "10px", fontWeight: "bold" }}>Air Force Hubs (Waterkloof)</div>
-            <div style={{ fontSize: "8px", color: "#6b7280", marginTop: "2px" }}>Air Comm / Lift & Transport</div>
-          </div>
-
-          <div onClick={() => focusLocation(-34.1915, 18.4325, 11)} style={{ background: "#111119", border: "1px solid #1f2937", borderLeft: "3px solid #f59e0b", padding: "8px", cursor: "pointer", borderRadius: "2px" }}>
-            <div style={{ fontSize: "10px", fontWeight: "bold" }}>Naval Fleet Base (Simon's Town)</div>
-            <div style={{ fontSize: "8px", color: "#6b7280", marginTop: "2px" }}>Frigate Squadron / Submarines</div>
-          </div>
-
-          {/* Reference Key Summary */}
-          <div style={{ marginTop: "auto", background: "#0f0f1a", border: "1px solid #1f2937", padding: "10px", borderRadius: "2px", fontSize: "8px" }}>
-            <div style={{ letterSpacing: "1px", color: "#4b5563", fontWeight: "bold", marginBottom: "6px" }}>HIERARCHY CORES</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <span style={{ width: "6px", height: "6px", background: "#fb923c", borderRadius: "50%" }}></span>
-                <span style={{ color: "#9ca3af" }}>Orange: Battalion Scale (600+)</span>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <span style={{ width: "6px", height: "6px", background: "#f472b6", borderRadius: "50%" }}></span>
-                <span style={{ color: "#9ca3af" }}>Pink: Company / Squadron (~110)</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Live Map Canvas Component Box */}
-        <div style={{ flexGrow: 1, position: "relative", background: "#09090e" }}>
-          
-          {/* Layer Controls Floating Over Top Left Map Container */}
-          <div style={{ position: "absolute", top: "12px", left: "12px", zIndex: 1000, display: "flex", gap: "4px", background: "rgba(6,6,9,0.85)", padding: "4px", border: "1px solid #1f2937", borderRadius: "2px" }}>
-            {["ALL", "BATTALION", "COMPANY"].map(l => (
-              <button key={l} onClick={() => setFilterLevel(l)} style={{
-                background: filterLevel === l ? "#3b82f622" : "transparent",
-                color: filterLevel === l ? "#3b82f6" : "#4b5563",
-                border: `1px solid ${filterLevel === l ? "#3b82f6" : "#1f2937"}`,
-                padding: "4px 8px", fontSize: "8px", letterSpacing: "1px", cursor: "pointer", fontFamily: "Courier New", borderRadius: "2px"
-              }}>{l} SCALE</button>
+        {/* Floating Real-time Filters Bar over Map space Canvas */}
+        <div style={{
+          position: "absolute", top: "16px", right: "16px", zIndex: 999,
+          display: "flex", flexDirection: "column", gap: "6px", width: "240px",
+          background: "rgba(10, 10, 15, 0.85)", backdropFilter: "blur(4px)",
+          padding: "12px", border: "1px solid #1f2937", borderRadius: "2px"
+        }}>
+          <div style={{ fontSize: "8px", color: "#6b7280", letterSpacing: "1px" }}>FILTER OPERATIONAL SCALE</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "4px" }}>
+            {["ALL", "BATTALION", "COMPANY"].map(lvl => (
+              <button key={lvl} onClick={() => setFilterLevel(lvl)} style={{
+                background: filterLevel === lvl ? "#3b82f622" : "#060609",
+                color: filterLevel === lvl ? "#3b82f6" : "#9ca3af",
+                border: `1px solid ${filterLevel === lvl ? "#3b82f6" : "#222"}`,
+                padding: "4px 2px", fontSize: "7.5px", cursor: "pointer"
+              }}>{lvl}</button>
             ))}
           </div>
 
-          <div id="map" style={{ width: "100%", height: "100%" }}></div>
-
-          {/* Floating Right Readout Telemetry Overlay */}
-          <div style={{ position: "absolute", bottom: "16px", right: "16px", zIndex: 1000, width: "280px", background: "rgba(15,15,26,0.9)", border: "1px solid #1f2937", padding: "12px", borderRadius: "2px", backdropFilter: "blur(4px)" }}>
-            <div style={{ fontSize: "8px", letterSpacing: "2px", color: "#6b7280", marginBottom: "6px" }}>SECURE TELEMETRY FEED</div>
-            {activeNode ? (
-              <div className="fade-in">
-                <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "6px" }}>
-                  <span style={{ fontSize: "14px" }}>{activeNode.icon}</span>
-                  <div>
-                    <div style={{ fontSize: "10px", fontWeight: "bold", color: "#fff", lineHeight: "1.2" }}>{activeNode.n}</div>
-                    <div style={{ fontSize: "7px", color: activeNode.color, letterSpacing: "1px" }}>{activeNode.level} THREAT RESOLUTION CORE</div>
-                  </div>
-                </div>
-                <div style={{ fontSize: "8px", color: "#9ca3af", marginBottom: "6px" }}><i className="fa-solid fa-map-pin" style={{ marginRight: "4px", color: "#ef4444" }}></i> {activeNode.loc}</div>
-                <div style={{ fontSize: "9px", color: "#6b7280", lineHeight: "1.4", background: "#060609", padding: "6px", borderLeft: `2px solid ${activeNode.color}` }}>
-                  {activeNode.desc}
-                </div>
-                <div style={{ fontSize: "7px", color: "#3b82f6", marginTop: "6px", textAlign: "right" }}>CLICK FEED TO MAP STRUCTURE →</div>
-              </div>
-            ) : (
-              <div style={{ padding: "10px 0", textAlign: "center", color: "#374151", fontSize: "9px" }}>
-                <i className="fa-solid fa-satellite-dish" style={{ fontSize: "12px", marginBottom: "4px", display: "block" }}></i>
-                AWAITING INTEL CAPTURE PIN SELECTION
-              </div>
-            )}
-          </div>
+          <div style={{ fontSize: "8px", color: "#6b7280", letterSpacing: "1px", marginTop: "6px" }}>FILTER UNIT FUNCTIONAL BRANCH</div>
+          <select 
+            value={filterBranch} 
+            onChange={(e) => setFilterBranch(e.target.value)}
+            style={{
+              background: "#060609", color: "#9ca3af", border: "1px solid #222",
+              padding: "6px", fontSize: "9px", fontFamily: "Courier New, monospace", outline: "none"
+            }}>
+            {branches.map(br => <option key={br} value={br}>{br.toUpperCase()} CAPABILITY</option>)}
+          </select>
         </div>
 
-      </div>
-
-      {/* Base Security Classification Sign-off footer */}
-      <div style={{ textAlign: "center", padding: "6px", background: "#060609", borderTop: "1px solid #111827", color: "#1f2937", fontSize: "8px", letterSpacing: "2px" }}>
-        SANDF Operational Intelligence Pipeline · Geospatial Reference Grid Node Engine
+        {/* Leaflet Mount Target DIV element node */}
+        <div id="map"></div>
       </div>
     </div>
   );
